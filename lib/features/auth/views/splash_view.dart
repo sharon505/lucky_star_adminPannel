@@ -22,7 +22,6 @@ class _SplashViewState extends State<SplashView> {
   @override
   void initState() {
     super.initState();
-    ///todo button auto
     Future.delayed(
       const Duration(seconds: 3),
       nav,
@@ -33,7 +32,7 @@ class _SplashViewState extends State<SplashView> {
   Widget build(BuildContext context) {
     TextStyle style = AppTypography.heading1.copyWith(
       color: AppTheme.background,
-      fontSize: 30.sp,
+      fontSize: 35.sp,
       height: 2,
     );
 
@@ -61,7 +60,8 @@ class _SplashViewState extends State<SplashView> {
 
   Widget _text({
     TextStyle? style,
-    String title = 'Welcome to\nLucky Star\nAdmin',
+    // String title = 'Welcome to\nLucky Star\nAdmin',
+    String title = 'Lucky Star\nAdmin Panel',
   }) {
     return Align(
       alignment: Alignment.topLeft,
@@ -77,9 +77,9 @@ class _SplashViewState extends State<SplashView> {
 
   Widget _image() {
     return Positioned(
-      top: 120.h,
+      top: 195.h,
       child: Image.asset(
-        'assets/splash/giftbox.png',
+        'assets/splash/cash pic.png',
         fit: BoxFit.contain,
         scale: 2.8,
       ),

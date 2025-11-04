@@ -35,7 +35,7 @@ class AppButton extends StatelessWidget {
       height: height ?? 48.h,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: color ?? AppTheme.background,
+          backgroundColor: color ?? AppTheme.adminGreen,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),
@@ -62,7 +62,7 @@ class AppButton extends StatelessWidget {
               text,
               style: style ?? AppTypography.heading2.copyWith(
                 fontSize: 20.sp,
-                color: textColor ?? AppTheme.primary,
+                color: textColor ?? AppTheme.adminDrawer,
               ),
             ),
           ],

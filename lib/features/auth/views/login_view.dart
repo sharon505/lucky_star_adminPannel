@@ -53,68 +53,84 @@ class LoginView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.primary,
-      body: GradientBackground(
-        colors: AppTheme.winGradient,
-        child: SafeArea(
-          child: Padding(
-            padding: AppPadding.allMedium,
-            child: SingleChildScrollView(
-              child: Consumer2<LoginFormProvider, AuthViewModel>(
-                builder: (context, form, authVm, _) {
-                  final isLoading = authVm.isLoading;
+      body: SizedBox.expand( // guarantees bounds for the background
+        child: GradientBackground(
+          colors: AppTheme.winGradient,
+          child: SafeArea(
+            child: Padding(
+              padding: AppPadding.allMedium,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // ✅ LayoutBuilder gives us the real viewport height.
+                  final minH = constraints.maxHeight;
 
-                  return Form(
-                    key: form.formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _image(image: 'assets/splash/giftBoxClosed.png'),
-                        _text(text: 'Sign in to start winning rewards'),
-                        gap,
-                        AppTextFormField(
-                          label: "Username",
-                          hint: "Enter your username",
-                          controller: form.usernameController,
-                          keyboardType: TextInputType.text,
-                          prefixIcon: Icons.person,
-                          validator: form.validateUsername,
-                          enabled: !isLoading,
-                        ),
-                        AppTextFormField(
-                          label: "Password",
-                          hint: "Enter your password",
-                          controller: form.passwordController,
-                          isPassword: true,
-                          prefixIcon: Icons.lock,
-                          validator: form.validatePassword,
-                          enabled: !isLoading,
-                          // If your AppTextFormField supports a suffixIcon/toggle, hook it to:
-                          // obscureText: !form.isPasswordVisible,
-                          // suffixIcon: IconButton(
-                          //   icon: Icon(form.isPasswordVisible ? Icons.visibility : Icons.visibility_off),
-                          //   onPressed: form.togglePasswordVisibility,
-                          // ),
-                        ),
-                        SizedBox(height: 10.h),
-                        button(
-                          padding: AppPadding.allSmall.copyWith(right: 0, left: 0),
-                          ///todo un command the code before release (login button)
-                          onPressed: ()=>Navigator.pushNamed(context,'HomePage'),
-                          // onPressed: isLoading ? null : () => _submit(context),
-                          text: isLoading ? "Logging in..." : "Login",
-                        ),
-                        Center(child: Text("Version ${ApiEndpoints.currentVersion}",style: TextStyle(
-                          color: Colors.white
-                        ),)),
-                        if (authVm.errorMessage != null) ...[
-                          SizedBox(height: 12.h),
-                          Text(
-                            authVm.errorMessage!,
-                            style: AppTypography.body.copyWith(color: Colors.redAccent),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ],
+                  return SingleChildScrollView(
+                    // Let scroll view size to content; we give content a minHeight = viewport
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: minH),
+                      child: Consumer2<LoginFormProvider, AuthViewModel>(
+                        builder: (context, form, authVm, _) {
+                          final isLoading = authVm.isLoading;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisSize: MainAxisSize.min, // important in scroll views
+                            children: [
+                              _image(image: 'assets/splash/tresureChest.png'),
+                              _text(text: 'Sign In To\nLuckyStar Admin'),
+                              gap,
+                              AppTextFormField(
+                                label: "Username",
+                                hint: "Enter your username",
+                                controller: form.usernameController,
+                                keyboardType: TextInputType.text,
+                                prefixIcon: Icons.person,
+                                validator: form.validateUsername,
+                                enabled: !isLoading,
+                              ),
+                              AppTextFormField(
+                                label: "Password",
+                                hint: "Enter your password",
+                                controller: form.passwordController,
+                                isPassword: true,
+                                prefixIcon: Icons.lock,
+                                validator: form.validatePassword,
+                                enabled: !isLoading,
+                                // If your AppTextFormField supports a suffixIcon/toggle, hook it to:
+                                // obscureText: !form.isPasswordVisible,
+                                // suffixIcon: IconButton(
+                                //   icon: Icon(form.isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                                //   onPressed: form.togglePasswordVisibility,
+                                // ),
+                              ),
+                              SizedBox(height: 10.h),
+                              button(
+                                padding: AppPadding.allSmall.copyWith(right: 0, left: 0),
+                                ///todo un command the code before release (login button)
+                                onPressed: ()=>Navigator.pushNamed(context,'DashboardView'),
+                                // onPressed: isLoading ? null : () => _submit(context),
+                                text: isLoading ? "Logging in..." : "Login",
+                              ),
+                              Center(
+                                child: Text(
+                                  "Version ${ApiEndpoints.currentVersion}",
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              if (authVm.errorMessage != null) ...[
+                                SizedBox(height: 12.h),
+                                Text(
+                                  authVm.errorMessage!,
+                                  style: AppTypography.body.copyWith(color: Colors.redAccent),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                              // Bottom breathing room; don't use Spacer in a scroll view.
+                              SizedBox(height: 12.h),
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   );
                 },
@@ -128,7 +144,7 @@ class LoginView extends StatelessWidget {
 
   Widget _text({String? text}) {
     return Text(
-      text ?? 'Sign in to start winning rewards',
+      text ?? 'Sign into Lucky Star Admin',
       style: AppTypography.heading1.copyWith(
         color: AppTheme.background,
         fontSize: 30.sp,
@@ -141,7 +157,9 @@ class LoginView extends StatelessWidget {
   Widget _image({String? image}) {
     return Padding(
       padding: EdgeInsets.only(top: 20.h, bottom: 8.h),
-      child: Image.asset(image ?? 'assets/splash/giftBoxClosed.png'),
+      child: Image.asset(
+        height: 300.h,
+          image ?? 'assets/splash/giftBoxClosed.png'),
     );
   }
 }

@@ -9,7 +9,11 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GradientBackground(
-      colors: AppTheme.gradientOrangePurple,
+      colors: [
+        AppTheme.adminDrawer,
+        AppTheme.adminBackGroundGreen
+      ],
+      // colors: AppTheme.gradientOrangePurple,
       child: Center(
         child: Text(""),
       ),

@@ -20,6 +20,12 @@ class AppTheme {
   static const textPrimary = Color(0xFF212121);
   static const textSecondary = Color(0xFF757575);
 
+  //admin panel color
+  static const adminGreen = Color(0xFFA1E861); // Success / Win
+  static const adminTileGreen = Color(0xFF0F3442);   // Lose / Error
+  static const adminBackGroundGreen = Color(0xFF082834);  // Info / Hints
+  static const adminDrawer = Color(0xFF051D2A);// Excitement / Offers
+
   // ✨ Special Gradients
   static const rewardGradient = [
     Color(0xFFFFD54F), // Gold yellow

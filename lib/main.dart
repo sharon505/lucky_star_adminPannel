@@ -10,6 +10,7 @@ import 'features/auth/viewmodel/LoginFormProvider_viewModel.dart';
 import 'features/auth/viewmodel/login_view_model.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/splash_view.dart';
+import 'features/dasbord/dashboard_view.dart';
 import 'features/home/home_page.dart';
 
 
@@ -35,9 +36,12 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (context) => LoginFormProvider()),
 ];
 
+//9567030890
+
 Map<String, Widget Function(BuildContext)> routes = <String, WidgetBuilder>{
   'LoginView': (context) => const LoginView(),
-  'HomePage': (context) => const HomePage(),
+  'HomePage':  (context) => const HomePage(),
+  'DashboardView':  (context) => const DashboardView(),
   // 'PayOutReportView': (context) => const PayOutReportView(),
   // 'PayOutView': (context) => const PayOutView(),
   // 'SummaryView': (context) => const SummaryView(),
