@@ -1,44 +1,48 @@
-class LoginResponse {
-  final List<Result> result;
-  final List<UserData> data;
+// lib/features/auth/model/login_response.dart
 
-  LoginResponse({
+class LoginResponse {
+  final List<LoginResult> result;
+  final List<dynamic> data; // Keep dynamic if Data is empty or varies
+
+  const LoginResponse({
     required this.result,
     required this.data,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
-      result: (json['Result'] as List)
-          .map((e) => Result.fromJson(e))
+      result: (json['Result'] as List? ?? [])
+          .map((e) => LoginResult.fromJson(e as Map<String, dynamic>))
           .toList(),
-      data: (json['Data'] as List)
-          .map((e) => UserData.fromJson(e))
-          .toList(),
+      data: (json['Data'] as List? ?? []),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'Result': result.map((e) => e.toJson()).toList(),
-      'Data': data.map((e) => e.toJson()).toList(),
+      'Data': data,
     };
   }
+
+  /// Convenience getters (optional)
+  int? get statusId => result.isNotEmpty ? result.first.statusId : null;
+  String? get message => result.isNotEmpty ? result.first.msg : null;
 }
 
-class Result {
+class LoginResult {
   final int statusId;
   final String msg;
 
-  Result({
+  const LoginResult({
     required this.statusId,
     required this.msg,
   });
 
-  factory Result.fromJson(Map<String, dynamic> json) {
-    return Result(
-      statusId: json['STATUSID'],
-      msg: json['MSG'],
+  factory LoginResult.fromJson(Map<String, dynamic> json) {
+    return LoginResult(
+      statusId: (json['STATUSID'] as num?)?.toInt() ?? 0,
+      msg: (json['MSG'] ?? '').toString(),
     );
   }
 
@@ -46,34 +50,6 @@ class Result {
     return {
       'STATUSID': statusId,
       'MSG': msg,
-    };
-  }
-}
-
-class UserData {
-  final String name;
-  final int distributorId;
-  final String distributorCode;
-
-  UserData({
-    required this.name,
-    required this.distributorId,
-    required this.distributorCode,
-  });
-
-  factory UserData.fromJson(Map<String, dynamic> json) {
-    return UserData(
-      name: json['Name']?.trim() ?? '',
-      distributorId: json['DistributorID'],
-      distributorCode: json['DistributorCode'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'Name': name,
-      'DistributorID': distributorId,
-      'DistributorCode': distributorCode,
     };
   }
 }

@@ -1,43 +1,42 @@
-class ApiEndpoints  {
+class ApiEndpoints {
+  // ---- Base ----
+  static const String _base = 'https://mobapp.dubailuckystar.com:29624/luckyWinner.asmx';
 
-  static const Map<String, String> header = {
-    'Content-Type': 'application/x-www-form-urlencoded',
+  // Use Uri so you don't need Uri.parse everywhere.
+  static Uri _u(String path) => Uri.parse('$_base/$path');
+
+  // ---- Headers ----
+  static const Map<String, String> formHeaders = {
+    'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
   };
 
-  static const String baseUrl = "https://mobapp.dubailuckystar.com:29624/luckyWinner.asmx";
+  // Handy if you add JSON endpoints later
+  static const Map<String, String> jsonHeaders = {
+    'Content-Type': 'application/json; charset=utf-8',
+  };
 
-  static const String currentVersion = "1.0.0+1";
+  // ---- App meta ----
+  static const String appVersion = '1.0.0+1';
 
-  ///login
-  static const String agentLogin = "${baseUrl}/Login";
+  // ---- Auth ----
+  static final Uri agentLogin = _u('Login');
 
-  ///reports
-  static const String ticketSearch = "${baseUrl}/SP_PRIZE_DETAILS";
+  // ---- Reports ----
+  static final Uri ticketSearch            = _u('SP_PRIZE_DETAILS');
+  static final Uri stockReport             = _u('SP_StockReport');
+  static final Uri agentStockIssueDetails  = _u('REPORT_STOCK_ISSUE_FOR_DISTRIBUTOR');
+  static final Uri currentStockByAgent     = _u('REPORT_STOCK_BALANCE_OF_DISTRIBUTOR');
+  static final Uri salesDetailsByAgent     = _u('REPORT_SALE_ENTRY');
+  static final Uri cashReceivablesByAgent  = _u('REPORT_CASH_RECEIVABLE');
+  static final Uri cashCollectionByAgent   = _u('REPORT_CASH_RECEIVED');
 
-  static const String stockReport = "${baseUrl}/SP_StockReport";
+  // ---- Financial overview ----
+  static final Uri cashBook                = _u('GetCashBook');
+  static final Uri dayBook                 = _u('sp_DaybookReport'); // check case on server
+  static final Uri profitAndLossStatement  = _u('REPORT_PANDL');
+  static final Uri expenseIncomeTracker    = _u('USP_GETJOURNALENTRYREPORT');
 
-  static const String agentStockIssueDetails = "${baseUrl}/REPORT_STOCK_ISSUE_FOR_DISTRIBUTOR";
-
-  static const String currentStockByAgent = "${baseUrl}/REPORT_STOCK_BALANCE_OF_DISTRIBUTOR";
-
-  static const String salesDetailsByAgent = "${baseUrl}/REPORT_SALE_ENTRY";
-
-  static const String cashReceivablesByAgent = "${baseUrl}/REPORT_CASH_RECEIVABLE";
-
-  static const String cashCollectionByAgent = "${baseUrl}/REPORT_CASH_RECEIVED";
-
-  ///financial overview
-  static const String cashBook = "${baseUrl}/GetCashBook";
-
-  static const String dayBook = "${baseUrl}/sp_DaybookReport";
-
-  static const String profitAndLossStatement = "${baseUrl}/REPORT_PANDL";
-
-  static const String expenseIncomeTracker = "${baseUrl}/USP_GETJOURNALENTRYREPORT";
-
-  ///extra url
-  static const String getAgent = "${baseUrl}/USP_GetDistributor_LIST";
-
-  static const String getProducts = "${baseUrl}/USP_Getproducts";
-
+  // ---- Extra ----
+  static final Uri getAgent                = _u('USP_GetDistributor_LIST');
+  static final Uri getProducts             = _u('USP_Getproducts'); // confirm exact casing
 }

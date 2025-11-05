@@ -12,6 +12,7 @@ import 'features/auth/views/login_view.dart';
 import 'features/auth/views/splash_view.dart';
 import 'features/dasbord/dashboard_view.dart';
 import 'features/home/home_page.dart';
+import 'features/reports/viewModels/prize_search_view_model.dart';
 
 
 class MyHttpOverrides extends HttpOverrides{
@@ -34,6 +35,8 @@ List<SingleChildWidget> providers = [
   ///Auth
   ChangeNotifierProvider(create: (context) => AuthViewModel()),
   ChangeNotifierProvider(create: (context) => LoginFormProvider()),
+  ///ticket search
+  ChangeNotifierProvider(create: (_) => PrizeSearchViewModel()),
 ];
 
 //9567030890

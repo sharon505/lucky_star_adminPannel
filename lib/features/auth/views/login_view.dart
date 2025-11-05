@@ -11,12 +11,18 @@ import '../../../shared/app_text_form_field.dart';
 import '../viewmodel/LoginFormProvider_viewModel.dart';
 import '../viewmodel/login_view_model.dart';
 import '../widgets/authButton_widget.dart';
-
-// import your provider + viewmodel + user model
 import '../model/model_user.dart';
 
-class LoginView extends StatelessWidget {
+class LoginView extends StatefulWidget {
   const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  // ❗ Form key belongs to the widget instance, not the provider
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +32,9 @@ class LoginView extends StatelessWidget {
       final form = context.read<LoginFormProvider>();
       final auth = context.read<AuthViewModel>();
 
-      if (!form.validateForm()) return;
+      // Validate using the local key
+      if (!(_formKey.currentState?.validate() ?? false)) return;
 
-      // Call API
       await auth.login(
         UserModel(
           usercode: form.usernameController.text.trim(),
@@ -36,25 +42,21 @@ class LoginView extends StatelessWidget {
         ),
       );
 
-      // Handle result
       final error = auth.errorMessage;
       if (error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error)));
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
         return;
       }
 
-      // Success -> navigate
       if (auth.loginResponse != null && context.mounted) {
-        Navigator.pushReplacementNamed(context, 'HomePageViews');
+        Navigator.pushReplacementNamed(context, 'DashboardView');
       }
     }
 
     return Scaffold(
       backgroundColor: AppTheme.primary,
       body: SizedBox.expand(
-        // guarantees bounds for the background
         child: GradientBackground(
           colors: AppTheme.winGradient,
           child: SafeArea(
@@ -62,85 +64,66 @@ class LoginView extends StatelessWidget {
               padding: AppPadding.allMedium,
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  // ✅ LayoutBuilder gives us the real viewport height.
                   final minH = constraints.maxHeight;
 
                   return SingleChildScrollView(
-                    // Let scroll view size to content; we give content a minHeight = viewport
                     child: ConstrainedBox(
                       constraints: BoxConstraints(minHeight: minH),
                       child: Consumer2<LoginFormProvider, AuthViewModel>(
                         builder: (context, form, authVm, _) {
                           final isLoading = authVm.isLoading;
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            mainAxisSize: MainAxisSize.min,
-                            // important in scroll views
-                            children: [
-                              _image(image: 'assets/splash/tresureChest.png'),
-                              _text(text: 'Sign In To\nLuckyStar Admin'),
-                              gap,
-                              AppTextFormField(
-                                label: "Username",
-                                hint: "Enter your username",
-                                controller: form.usernameController,
-                                keyboardType: TextInputType.text,
-                                prefixIcon: Icons.person,
-                                validator: form.validateUsername,
-                                enabled: !isLoading,
-                              ),
-                              AppTextFormField(
-                                label: "Password",
-                                hint: "Enter your password",
-                                controller: form.passwordController,
-                                isPassword: true,
-                                prefixIcon: Icons.lock,
-                                validator: form.validatePassword,
-                                enabled: !isLoading,
-                                // If your AppTextFormField supports a suffixIcon/toggle, hook it to:
-                                // obscureText: !form.isPasswordVisible,
-                                // suffixIcon: IconButton(
-                                //   icon: Icon(form.isPasswordVisible ? Icons.visibility : Icons.visibility_off),
-                                //   onPressed: form.togglePasswordVisibility,
-                                // ),
-                              ),
-                              SizedBox(height: 10.h),
-                              button(
-                                padding: AppPadding.allSmall.copyWith(
-                                  right: 0,
-                                  left: 0,
+                          return Form(
+                            key: _formKey, // ✅ unique per screen instance
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _image(image: 'assets/splash/tresureChest.png'),
+                                _text(text: 'Sign in to\nLucky Star Admin'),
+                                gap,
+                                AppTextFormField(
+                                  label: "Username",
+                                  hint: "Enter your username",
+                                  controller: form.usernameController,
+                                  keyboardType: TextInputType.text,
+                                  prefixIcon: Icons.person,
+                                  validator: form.validateUsername,
+                                  enabled: !isLoading,
                                 ),
-
-                                ///todo un command the code before release (login button)
-                                onPressed: () =>
-                                    Navigator.pushNamedAndRemoveUntil(
-                                      context,
-                                      'DashboardView',
-                                      (route) => false,
-                                    ),
-                                // onPressed: isLoading ? null : () => _submit(context),
-                                text: isLoading ? "Logging in..." : "Login",
-                              ),
-                              Center(
-                                child: Text(
-                                  "Version ${ApiEndpoints.currentVersion}",
-                                  style: const TextStyle(color: Colors.white),
+                                AppTextFormField(
+                                  label: "Password",
+                                  hint: "Enter your password",
+                                  controller: form.passwordController,
+                                  isPassword: true,
+                                  prefixIcon: Icons.lock,
+                                  validator: form.validatePassword,
+                                  enabled: !isLoading,
                                 ),
-                              ),
-                              if (authVm.errorMessage != null) ...[
-                                SizedBox(height: 12.h),
-                                Text(
-                                  authVm.errorMessage!,
-                                  style: AppTypography.body.copyWith(
-                                    color: Colors.redAccent,
+                                SizedBox(height: 10.h),
+                                button(
+                                  padding: AppPadding.allSmall.copyWith(right: 0, left: 0),
+                                  onPressed: isLoading ? null : () => _submit(context),
+                                  text: isLoading ? "Logging in…" : "Log in",
+                                ),
+                                Center(
+                                  child: Text(
+                                    "Version ${ApiEndpoints.appVersion}",
+                                    style: const TextStyle(color: Colors.white),
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
+                                if (authVm.errorMessage != null) ...[
+                                  SizedBox(height: 12.h),
+                                  Text(
+                                    authVm.errorMessage!,
+                                    style: AppTypography.body.copyWith(color: Colors.redAccent),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                                SizedBox(height: 12.h),
                               ],
-                              // Bottom breathing room; don't use Spacer in a scroll view.
-                              SizedBox(height: 12.h),
-                            ],
+                            ),
                           );
                         },
                       ),
@@ -157,11 +140,11 @@ class LoginView extends StatelessWidget {
 
   Widget _text({String? text}) {
     return Text(
-      text ?? 'Sign into Lucky Star Admin',
+      text ?? 'Sign in to Lucky Star Admin',
       style: AppTypography.heading1.copyWith(
         color: AppTheme.background,
         fontSize: 30.sp,
-        height: 2.h,
+        height: 1.2,
       ),
       textAlign: TextAlign.center,
     );
@@ -171,9 +154,10 @@ class LoginView extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(top: 20.h, bottom: 8.h),
       child: Image.asset(
-        height: 300.h,
         image ?? 'assets/splash/giftBoxClosed.png',
+        height: 300.h,
       ),
     );
   }
+
 }

@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 
 class LoginFormProvider extends ChangeNotifier {
   // Controllers
-
-
-  ///todo hard coded
+  /// TODO: Hard-coded dev values. Remove before release.
   final TextEditingController usernameController = TextEditingController(
-    // text: "Jebelali1"
-
-    // text: 'BP RZ01'
+    text: '1234',
+    // text: "Jebelali1",
+    // text: 'BP RZ01',
   );
 
   final TextEditingController passwordController = TextEditingController(
-    // text: 'ali1@123'
-
-    // text: 'RZ01#123'
+    text: 'Pass@123',
+    // text: 'ali1@123',
+    // text: 'RZ01#123',
   );
 
   // Form Key
@@ -22,6 +20,10 @@ class LoginFormProvider extends ChangeNotifier {
 
   bool _isPasswordVisible = false;
   bool get isPasswordVisible => _isPasswordVisible;
+
+  // Convenient getters (non-breaking)
+  String get username => usernameController.text.trim();
+  String get password => passwordController.text;
 
   // Toggle Password Visibility
   void togglePasswordVisibility() {
@@ -31,7 +33,8 @@ class LoginFormProvider extends ChangeNotifier {
 
   // Validator for Username
   String? validateUsername(String? value) {
-    if (value == null || value.trim().isEmpty) {
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) {
       return "Username is required";
     }
     return null;
@@ -39,10 +42,11 @@ class LoginFormProvider extends ChangeNotifier {
 
   // Validator for Password
   String? validatePassword(String? value) {
-    if (value == null || value.trim().isEmpty) {
+    final v = value ?? '';
+    if (v.trim().isEmpty) {
       return "Password is required";
     }
-    if (value.length < 4) {
+    if (v.length < 4) {
       return "Password must be at least 4 characters";
     }
     return null;

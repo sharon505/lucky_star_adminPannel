@@ -67,10 +67,20 @@ class _SearchTextFieldState extends State<SearchTextField> {
     setState(() {}); // update clear button visibility
   }
 
-  void _clear() {
+  // void _clear() {
+  //   _controller.clear();
+  //   widget.onChanged?.call('');
+  //   setState(() {});
+  // }
+  void _clear({bool exitField = true}) {
     _controller.clear();
     widget.onChanged?.call('');
-    setState(() {});
+    if (exitField) {
+      // remove focus -> closes keyboard
+      FocusScope.of(context).unfocus();
+      // Or: FocusManager.instance.primaryFocus?.unfocus();
+    }
+    if (mounted) setState(() {});
   }
 
   @override
