@@ -21,7 +21,13 @@ class AppTheme {
   static const textSecondary = Color(0xFF757575);
 
   //admin panel color
+  static const adminWhite = Color(0xFFE0E9EC); // Success / Win
   static const adminGreen = Color(0xFFA1E861); // Success / Win
+
+  static const adminGreenLite = Color(0xFF0F3441);   // Lose / Error
+  static const adminGreenDark = Color(0xFF082835);   // Lose / Error
+  static const adminGreenDarker = Color(0xFF051E29);
+
   static const adminTileGreen = Color(0xFF0F3442);   // Lose / Error
   static const adminBackGroundGreen = Color(0xFF082834);  // Info / Hints
   static const adminDrawer = Color(0xFF051D2A);// Excitement / Offers

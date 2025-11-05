@@ -39,9 +39,9 @@ class LoginView extends StatelessWidget {
       // Handle result
       final error = auth.errorMessage;
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
         return;
       }
 
@@ -53,7 +53,8 @@ class LoginView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.primary,
-      body: SizedBox.expand( // guarantees bounds for the background
+      body: SizedBox.expand(
+        // guarantees bounds for the background
         child: GradientBackground(
           colors: AppTheme.winGradient,
           child: SafeArea(
@@ -74,7 +75,8 @@ class LoginView extends StatelessWidget {
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                            mainAxisSize: MainAxisSize.min, // important in scroll views
+                            mainAxisSize: MainAxisSize.min,
+                            // important in scroll views
                             children: [
                               _image(image: 'assets/splash/tresureChest.png'),
                               _text(text: 'Sign In To\nLuckyStar Admin'),
@@ -105,9 +107,18 @@ class LoginView extends StatelessWidget {
                               ),
                               SizedBox(height: 10.h),
                               button(
-                                padding: AppPadding.allSmall.copyWith(right: 0, left: 0),
+                                padding: AppPadding.allSmall.copyWith(
+                                  right: 0,
+                                  left: 0,
+                                ),
+
                                 ///todo un command the code before release (login button)
-                                onPressed: ()=>Navigator.pushNamed(context,'DashboardView'),
+                                onPressed: () =>
+                                    Navigator.pushNamedAndRemoveUntil(
+                                      context,
+                                      'DashboardView',
+                                      (route) => false,
+                                    ),
                                 // onPressed: isLoading ? null : () => _submit(context),
                                 text: isLoading ? "Logging in..." : "Login",
                               ),
@@ -121,7 +132,9 @@ class LoginView extends StatelessWidget {
                                 SizedBox(height: 12.h),
                                 Text(
                                   authVm.errorMessage!,
-                                  style: AppTypography.body.copyWith(color: Colors.redAccent),
+                                  style: AppTypography.body.copyWith(
+                                    color: Colors.redAccent,
+                                  ),
                                   textAlign: TextAlign.center,
                                 ),
                               ],
@@ -159,7 +172,8 @@ class LoginView extends StatelessWidget {
       padding: EdgeInsets.only(top: 20.h, bottom: 8.h),
       child: Image.asset(
         height: 300.h,
-          image ?? 'assets/splash/giftBoxClosed.png'),
+        image ?? 'assets/splash/giftBoxClosed.png',
+      ),
     );
   }
 }
