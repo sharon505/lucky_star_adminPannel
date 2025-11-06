@@ -13,6 +13,7 @@ import 'features/auth/views/splash_view.dart';
 import 'features/dasbord/dashboard_view.dart';
 import 'features/home/home_page.dart';
 import 'features/reports/viewModels/agent_stock_issue_view_model.dart';
+import 'features/reports/viewModels/current_stock_by_agent_view_model.dart';
 import 'features/reports/viewModels/distributor_view_model.dart';
 import 'features/reports/viewModels/prize_search_view_model.dart';
 import 'features/reports/viewModels/product_view_model.dart';
@@ -49,6 +50,7 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => ProductViewModel()..load()),
   ChangeNotifierProvider(create: (_) => DistributorViewModel()..load()),
   ChangeNotifierProvider(create: (_) => AgentStockIssueViewModel()),
+  ChangeNotifierProvider(create: (_) => CurrentStockByAgentViewModel()),
 ];
 
 //9567030890
