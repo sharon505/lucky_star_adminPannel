@@ -13,13 +13,19 @@ import 'features/auth/views/splash_view.dart';
 import 'features/dasbord/dashboard_view.dart';
 import 'features/home/home_page.dart';
 import 'features/reports/viewModels/agent_stock_issue_view_model.dart';
+import 'features/reports/viewModels/cash_collection_by_agent_view_model.dart';
+import 'features/reports/viewModels/cash_receivables_view_model.dart';
 import 'features/reports/viewModels/current_stock_by_agent_view_model.dart';
 import 'features/reports/viewModels/distributor_view_model.dart';
 import 'features/reports/viewModels/prize_search_view_model.dart';
 import 'features/reports/viewModels/product_view_model.dart';
+import 'features/reports/viewModels/sales_details_by_agent_view_model.dart';
 import 'features/reports/viewModels/stock_report_view_model.dart';
 import 'features/reports/views/agent_stock_issue_details.dart';
+import 'features/reports/views/cash_collection_by_agent.dart';
+import 'features/reports/views/cash_receivables_by_agent.dart';
 import 'features/reports/views/current_stock_by_agent.dart';
+import 'features/reports/views/sales_details_by_agent.dart';
 import 'features/reports/views/stock_report_view.dart';
 
 
@@ -51,6 +57,9 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => DistributorViewModel()..load()),
   ChangeNotifierProvider(create: (_) => AgentStockIssueViewModel()),
   ChangeNotifierProvider(create: (_) => CurrentStockByAgentViewModel()),
+  ChangeNotifierProvider(create: (_) => CashReceivablesViewModel()),
+  ChangeNotifierProvider(create: (_) => SalesDetailsByAgentViewModel()),
+  ChangeNotifierProvider(create: (_) => CashCollectionByAgentViewModel()),
 ];
 
 //9567030890
@@ -63,11 +72,10 @@ Map<String, Widget Function(BuildContext)> routes = <String, WidgetBuilder>{
   'StockReportView':  (context) => const StockReportView(),
   'AgentStockIssueDetails':  (context) => const AgentStockIssueDetails(),
   'CurrentStockByAgent':  (context) => const CurrentStockByAgent(),
-  // 'PayOutReportView': (context) => const PayOutReportView(),
-  // 'PayOutView': (context) => const PayOutView(),
-  // 'SummaryView': (context) => const SummaryView(),
-  // 'SaleEntryView': (context) => const SaleEntryView(),
-  // 'StockView': (context) => const StockView(),
+  ///sales
+  'CashCollectionByAgent':  (context) => const CashCollectionByAgent(),
+  'CashReceivablesByAgent':  (context) => const CashReceivablesByAgent(),
+  'SalesDetailsByAgent':  (context) => const SalesDetailsByAgent(),
 };
 
 class MyApp extends StatelessWidget {

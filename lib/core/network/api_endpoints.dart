@@ -26,11 +26,11 @@ class ApiEndpoints {
 
   static final Uri stockReport             = _u('SP_StockReport');///finish
   static final Uri agentStockIssueDetails  = _u('REPORT_STOCK_ISSUE_FOR_DISTRIBUTOR');///finish
-  static final Uri currentStockByAgent     = _u('REPORT_STOCK_BALANCE_OF_DISTRIBUTOR');
+  static final Uri currentStockByAgent     = _u('REPORT_STOCK_BALANCE_OF_DISTRIBUTOR');///finish
 
-  static final Uri salesDetailsByAgent     = _u('REPORT_SALE_ENTRY');
-  static final Uri cashReceivablesByAgent  = _u('REPORT_CASH_RECEIVABLE');
-  static final Uri cashCollectionByAgent   = _u('REPORT_CASH_RECEIVED');
+  static final Uri salesDetailsByAgent     = _u('REPORT_SALE_ENTRY');///finish
+  static final Uri cashReceivablesByAgent  = _u('REPORT_CASH_RECEIVABLE');///finish
+  static final Uri cashCollectionByAgent   = _u('REPORT_CASH_RECEIVED');///finish
 
   // ---- Financial overview ----
   static final Uri cashBook                = _u('GetCashBook');

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/color_scheme.dart';
 import '../../../shared/app_gradient_background.dart';
 import '../viewModels/prize_search_view_model.dart';
+import '../widgets/sales/report_quick_tiles.dart';
 import '../widgets/stock_report/stock_report_tile.dart';
 import '../widgets/ticket_search/prize_claim_card_widget.dart';
 import '../widgets/ticket_search/search_text_field_widget.dart';
@@ -39,6 +40,13 @@ class ReportsView extends StatelessWidget {
                 () => Navigator.pushNamed(context, 'CurrentStockByAgent'),
               ],
             ),
+            height,
+            _salesList(context, onTap: [
+                  () => Navigator.pushNamed(context, 'SalesDetailsByAgent'),
+                  () => Navigator.pushNamed(context, 'CashReceivablesByAgent'),
+                  () => Navigator.pushNamed(context, 'CashCollectionByAgent'),
+
+            ]),
           ],
         ),
       ),
@@ -158,6 +166,40 @@ class ReportsView extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  ///sales
+  Widget _salesList(BuildContext context, {List<Tap>? onTap}) {
+    Tap? _at(int i) => (onTap != null && i < onTap.length) ? onTap[i] : null;
+
+    final items = <ReportTileData>[
+      ReportTileData(
+        title: 'Sales Details By Agent',
+        subtitle: 'Agent-wise entries',
+        leadingIcon: Icons.receipt_long_rounded,
+        onTap: _at(0),
+      ),
+      ReportTileData(
+        title: 'Cash Receivables By Agent',
+        subtitle: 'Agent-wise entries',
+        leadingIcon: Icons.request_quote_rounded,
+        onTap: _at(1),
+      ),
+      ReportTileData(
+        title: 'Cash Collection By Agent',
+        subtitle: 'Agent-wise entries',
+        leadingIcon: Icons.payments_rounded,
+        onTap: _at(2),
+      ),
+    ];
+
+    return ListView.builder(
+      itemCount: items.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: AppPadding.allSmall, // keep your padding
+      itemBuilder: (context, index) => items[index], // <-- use index
     );
   }
 }
