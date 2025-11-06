@@ -39,6 +39,6 @@ class ApiEndpoints {
   static final Uri expenseIncomeTracker    = _u('USP_GETJOURNALENTRYREPORT');
 
   // ---- Extra ----
-  static final Uri getAgent                = _u('USP_GetDistributor_LIST');
-  static final Uri getProducts             = _u('USP_Getproducts'); // confirm exact casing
+  static final Uri getAgent                = _u('USP_GetDistributor_LIST');///finish
+  static final Uri getProducts             = _u('USP_Getproducts'); ///finish
 }

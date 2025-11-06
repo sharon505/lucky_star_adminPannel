@@ -12,6 +12,8 @@ import 'features/auth/views/login_view.dart';
 import 'features/auth/views/splash_view.dart';
 import 'features/dasbord/dashboard_view.dart';
 import 'features/home/home_page.dart';
+import 'features/reports/viewModels/agent_stock_issue_view_model.dart';
+import 'features/reports/viewModels/distributor_view_model.dart';
 import 'features/reports/viewModels/prize_search_view_model.dart';
 import 'features/reports/viewModels/product_view_model.dart';
 import 'features/reports/viewModels/stock_report_view_model.dart';
@@ -45,6 +47,8 @@ List<SingleChildWidget> providers = [
   ///report
   ChangeNotifierProvider(create: (_) => StockReportViewModel()),
   ChangeNotifierProvider(create: (_) => ProductViewModel()..load()),
+  ChangeNotifierProvider(create: (_) => DistributorViewModel()..load()),
+  ChangeNotifierProvider(create: (_) => AgentStockIssueViewModel()),
 ];
 
 //9567030890
