@@ -74,6 +74,15 @@ class PrizeSearchViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void reset() {
+    slnoController.clear();
+    _results = const [];
+    _errorMessage = null;
+    _isLoading = false; // just in case
+    notifyListeners();
+  }
+
+
   @override
   void dispose() {
     slnoController.dispose();

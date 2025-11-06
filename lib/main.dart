@@ -13,6 +13,11 @@ import 'features/auth/views/splash_view.dart';
 import 'features/dasbord/dashboard_view.dart';
 import 'features/home/home_page.dart';
 import 'features/reports/viewModels/prize_search_view_model.dart';
+import 'features/reports/viewModels/product_view_model.dart';
+import 'features/reports/viewModels/stock_report_view_model.dart';
+import 'features/reports/views/agent_stock_issue_details.dart';
+import 'features/reports/views/current_stock_by_agent.dart';
+import 'features/reports/views/stock_report_view.dart';
 
 
 class MyHttpOverrides extends HttpOverrides{
@@ -37,6 +42,9 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (context) => LoginFormProvider()),
   ///ticket search
   ChangeNotifierProvider(create: (_) => PrizeSearchViewModel()),
+  ///report
+  ChangeNotifierProvider(create: (_) => StockReportViewModel()),
+  ChangeNotifierProvider(create: (_) => ProductViewModel()..load()),
 ];
 
 //9567030890
@@ -45,6 +53,10 @@ Map<String, Widget Function(BuildContext)> routes = <String, WidgetBuilder>{
   'LoginView': (context) => const LoginView(),
   'HomePage':  (context) => const HomePage(),
   'DashboardView':  (context) => const DashboardView(),
+  ///reports
+  'StockReportView':  (context) => const StockReportView(),
+  'AgentStockIssueDetails':  (context) => const AgentStockIssueDetails(),
+  'CurrentStockByAgent':  (context) => const CurrentStockByAgent(),
   // 'PayOutReportView': (context) => const PayOutReportView(),
   // 'PayOutView': (context) => const PayOutView(),
   // 'SummaryView': (context) => const SummaryView(),

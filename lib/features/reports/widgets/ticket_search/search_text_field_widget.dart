@@ -1,7 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 
-import '../../../core/theme/color_scheme.dart';
+import '../../../../core/theme/color_scheme.dart';
+import '../../viewModels/prize_search_view_model.dart';
 
 class SearchTextField extends StatefulWidget {
   final TextEditingController? controller;
@@ -73,12 +77,17 @@ class _SearchTextFieldState extends State<SearchTextField> {
   //   setState(() {});
   // }
   void _clear({bool exitField = true}) {
+    // stop any pending debounced onChanged
+    _debounce?.cancel();
+
     _controller.clear();
     widget.onChanged?.call('');
+
+    // ✅ reset the view model too
+    context.read<PrizeSearchViewModel>().reset();
+
     if (exitField) {
-      // remove focus -> closes keyboard
       FocusScope.of(context).unfocus();
-      // Or: FocusManager.instance.primaryFocus?.unfocus();
     }
     if (mounted) setState(() {});
   }
@@ -91,6 +100,8 @@ class _SearchTextFieldState extends State<SearchTextField> {
     );
 
     return TextField(
+      textCapitalization: TextCapitalization.characters, // ask keyboard for CAPS
+      inputFormatters: [UpperCaseTextFormatter()], // enforce CAPS
       controller: _controller,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
@@ -130,6 +141,21 @@ class _SearchTextFieldState extends State<SearchTextField> {
     );
   }
 }
+
+// put this formatter somewhere common
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue,
+      TextEditingValue newValue,
+      ) {
+    return newValue.copyWith(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection, // keep cursor position
+    );
+  }
+}
+
 
 /// Example gradient wrapper you can use behind the search bar (optional).
 class AdminSearchBar extends StatelessWidget {
