@@ -413,7 +413,7 @@ class _CashBookTable extends StatelessWidget {
             rows: [
               ...items.map((e) => DataRow(
                 cells: [
-                  DataCell(SizedBox(width: 260.w, child: Text(e.descr, overflow: TextOverflow.ellipsis))),
+                  DataCell(SizedBox(width: 225.w, child: Text(e.descr, overflow: TextOverflow.ellipsis))),
                   DataCell(Text(e.debit.toStringAsFixed(2))),
                   DataCell(Text(e.credit.toStringAsFixed(2))),
                 ],
