@@ -34,7 +34,7 @@ class ApiEndpoints {
 
   // ---- Financial overview ----
   static final Uri cashBook                = _u('GetCashBook');
-  static final Uri dayBook                 = _u('sp_DaybookReport'); // check case on server
+  static final Uri dayBook                 = _u('sp_DaybookReport');
   static final Uri profitAndLossStatement  = _u('REPORT_PANDL');
   static final Uri expenseIncomeTracker    = _u('USP_GETJOURNALENTRYREPORT');
 

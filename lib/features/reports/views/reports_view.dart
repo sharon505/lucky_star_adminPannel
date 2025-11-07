@@ -31,6 +31,7 @@ class ReportsView extends StatelessWidget {
             ///ticketSearch
             height,
             _ticketSearch(context),
+
             ///stockReport
             _stocks(
               context,
@@ -41,12 +42,14 @@ class ReportsView extends StatelessWidget {
               ],
             ),
             height,
-            _salesList(context, onTap: [
-                  () => Navigator.pushNamed(context, 'SalesDetailsByAgent'),
-                  () => Navigator.pushNamed(context, 'CashReceivablesByAgent'),
-                  () => Navigator.pushNamed(context, 'CashCollectionByAgent'),
-
-            ]),
+            _salesList(
+              context,
+              onTap: [
+                () => Navigator.pushNamed(context, 'SalesDetailsByAgent'),
+                () => Navigator.pushNamed(context, 'CashReceivablesByAgent'),
+                () => Navigator.pushNamed(context, 'CashCollectionByAgent'),
+              ],
+            ),
           ],
         ),
       ),
@@ -175,7 +178,7 @@ class ReportsView extends StatelessWidget {
 
     final items = <ReportTileData>[
       ReportTileData(
-        title: 'Sales Details By Agent',
+        title: 'Sales Details from Agent',
         subtitle: 'Agent-wise entries',
         leadingIcon: Icons.receipt_long_rounded,
         onTap: _at(0),
@@ -198,7 +201,8 @@ class ReportsView extends StatelessWidget {
       itemCount: items.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: AppPadding.allSmall, // keep your padding
+      padding: AppPadding.allSmall,
+      // keep your padding
       itemBuilder: (context, index) => items[index], // <-- use index
     );
   }

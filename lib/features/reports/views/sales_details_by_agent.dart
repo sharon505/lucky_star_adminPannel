@@ -74,7 +74,7 @@ class _SalesDetailsScaffoldState extends State<_SalesDetailsScaffold> {
     final vm = context.watch<SalesDetailsByAgentViewModel>();
 
     return Scaffold(
-      appBar: const AppAppbar(text: 'Sales Details By Agent'),
+      appBar: const AppAppbar(text: 'Sales Details From Agent'),
       backgroundColor: AppTheme.adminGreenLite,
       floatingActionButton: AppFloatAction(
         onPressed: () => _openFilterDialog(context),
@@ -95,8 +95,8 @@ class _SalesDetailsScaffoldState extends State<_SalesDetailsScaffold> {
 /// ---------------- Filter Dialog ----------------
 Future<void> _openFilterDialog(BuildContext context) async {
   final vm = context.read<SalesDetailsByAgentViewModel>();
-  final productVm = context.read<ProductViewModel>();
-  final agentVm = context.read<DistributorViewModel>();
+  // final productVm = context.read<ProductViewModel>();
+  // final agentVm = context.read<DistributorViewModel>();
 
   DateTime from = vm.fromDate ?? DateTime.now().subtract(const Duration(days: 1));
   DateTime to = vm.toDate ?? DateTime.now();
@@ -147,7 +147,7 @@ Future<void> _openFilterDialog(BuildContext context) async {
         backgroundColor: AppTheme.adminGreenDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: const Text(
-          'Filter — Sales Details',
+          'Sales Details',
           style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
         ),
         content: Form(

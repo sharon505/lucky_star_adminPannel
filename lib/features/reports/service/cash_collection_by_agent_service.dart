@@ -18,7 +18,6 @@ class CashCollectionByAgentService {
         endpoint = endpoint ?? ApiEndpoints.cashCollectionByAgent,
         _baseHeaders = headers ??
             const {
-              // Use form-encoded unless your backend requires JSON
               'Content-Type': 'application/x-www-form-urlencoded',
             };
 
