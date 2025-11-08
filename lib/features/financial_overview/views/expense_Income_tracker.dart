@@ -456,9 +456,17 @@ class _ViewChip extends StatelessWidget {
 }
 
 /// ---------------- Table view ----------------
-class _TrackerTable extends StatelessWidget {
+class _TrackerTable extends StatefulWidget {
   final List<CashBookItem> items;
   const _TrackerTable({required this.items});
+
+  @override
+  State<_TrackerTable> createState() => _TrackerTableState();
+}
+
+class _TrackerTableState extends State<_TrackerTable> {
+  final _hCtrl = ScrollController();
+  final _vCtrl = ScrollController();
 
   String _fmt(DateTime d) {
     String two(int n) => n < 10 ? '0$n' : '$n';
@@ -466,57 +474,90 @@ class _TrackerTable extends StatelessWidget {
   }
 
   @override
+  void dispose() {
+    _hCtrl.dispose();
+    _vCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final items = widget.items;
+
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 1200.w),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 14.w,
-            horizontalMargin: 12.w,
-            headingRowHeight: 36.h,
-            dataRowMinHeight: 36.h,
-            dataRowMaxHeight: 44.h,
-            headingRowColor: WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
-            headingTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontWeight: FontWeight.w700,
-              fontSize: 12.sp,
+        child: Scrollbar(
+          controller: _vCtrl,
+          thumbVisibility: true,
+          child: SingleChildScrollView( // vertical
+            controller: _vCtrl,
+            child: Scrollbar(
+              controller: _hCtrl,
+              thumbVisibility: true,
+              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView( // horizontal
+                controller: _hCtrl,
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 14.w,
+                  horizontalMargin: 12.w,
+                  headingRowHeight: 36.h,
+                  dataRowMinHeight: 36.h,
+                  dataRowMaxHeight: 44.h,
+                  headingRowColor:
+                  WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
+                  headingTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
+                  ),
+                  dataTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontSize: 12.sp,
+                  ),
+                  columns: const [
+                    DataColumn(label: Text('DATE')),
+                    DataColumn(label: Text('LEDGER')),
+                    DataColumn(label: Text('NARRATION')),
+                    DataColumn(label: Text('MODE')),
+                    DataColumn(label: Text('REF')),
+                    DataColumn(label: Text('DEBIT')),
+                    DataColumn(label: Text('CREDIT')),
+                  ],
+                  rows: items.map((e) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(_fmt(e.tranDate))),
+                        DataCell(SizedBox(
+                          width: 150.w,
+                          child: Text(e.ledgerName, overflow: TextOverflow.ellipsis),
+                        )),
+                        DataCell(SizedBox(
+                          width: 260.w,
+                          child: Text(e.narration, overflow: TextOverflow.ellipsis),
+                        )),
+                        DataCell(Text(e.mode.name.toUpperCase())),
+                        DataCell(SizedBox(
+                          width: 60.w,
+                          child: Text(e.transactionRefNo, overflow: TextOverflow.ellipsis),
+                        )),
+                        DataCell(Text(e.debit.toStringAsFixed(2))),
+                        DataCell(Text(e.credit.toStringAsFixed(2))),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
-            dataTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontSize: 12.sp,
-            ),
-            columns: const [
-              DataColumn(label: Text('DATE')),
-              DataColumn(label: Text('LEDGER')),
-              DataColumn(label: Text('NARRATION')),
-              DataColumn(label: Text('MODE')),
-              DataColumn(label: Text('REF')),
-              DataColumn(label: Text('DEBIT')),
-              DataColumn(label: Text('CREDIT')),
-            ],
-            rows: items.map((e) {
-              return DataRow(
-                cells: [
-                  DataCell(Text(_fmt(e.tranDate))),
-                  DataCell(SizedBox(width: 150.w, child: Text(e.ledgerName, overflow: TextOverflow.ellipsis))),
-                  DataCell(SizedBox(width: 260.w, child: Text(e.narration, overflow: TextOverflow.ellipsis))),
-                  DataCell(Text(e.mode.name.toUpperCase())),
-                  DataCell(SizedBox(width: 60.w, child: Text(e.transactionRefNo, overflow: TextOverflow.ellipsis))),
-                  DataCell(Text(e.debit.toStringAsFixed(2))),
-                  DataCell(Text(e.credit.toStringAsFixed(2))),
-                ],
-              );
-            }).toList(),
           ),
         ),
       ),
     );
   }
 }
+
 
 /// ---------------- Tile view ----------------
 class _TrackerTiles extends StatelessWidget {

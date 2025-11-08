@@ -479,66 +479,99 @@ class _ViewChip extends StatelessWidget {
 ///                           TABLE VIEW
 /// =================================================================
 
-class _ReceivablesTableView extends StatelessWidget {
+class _ReceivablesTableView extends StatefulWidget {
   final List<CashReceivableItem> items;
   const _ReceivablesTableView({required this.items});
 
-  String _fmt(double v) => v.toStringAsFixed(2);
+  @override
+  State<_ReceivablesTableView> createState() => _ReceivablesTableViewState();
+}
+
+class _ReceivablesTableViewState extends State<_ReceivablesTableView> {
+  final _hCtrl = ScrollController();
+  final _vCtrl = ScrollController();
+
+  String _int(num v) => v.round().toString();
+
+  @override
+  void dispose() {
+    _hCtrl.dispose();
+    _vCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final items = widget.items;
+
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 820.w),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 14.w,
-            horizontalMargin: 12.w,
-            headingRowHeight: 36.h,
-            dataRowMinHeight: 36.h,
-            dataRowMaxHeight: 40.h,
-            headingRowColor: WidgetStateProperty.all(
-              AppTheme.adminWhite.withOpacity(.08),
+        child: Scrollbar(
+          controller: _vCtrl,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _vCtrl, // vertical scroll
+            child: Scrollbar(
+              controller: _hCtrl,
+              thumbVisibility: true,
+              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: _hCtrl, // horizontal scroll
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 14.w,
+                  horizontalMargin: 12.w,
+                  headingRowHeight: 36.h,
+                  dataRowMinHeight: 36.h,
+                  dataRowMaxHeight: 40.h,
+                  headingRowColor:
+                  WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
+                  headingTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
+                  ),
+                  dataTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontSize: 12.sp,
+                  ),
+                  columns: const [
+                    DataColumn(label: Text('SN')),
+                    DataColumn(label: Text('AGENT')),
+                    DataColumn(label: Text('SALE')),
+                    DataColumn(label: Text('COLLECTION')),
+                    DataColumn(label: Text('RECEIVABLE')),
+                    DataColumn(label: Text('PAYOUT')),
+                    DataColumn(label: Text('BAL. RECEIVE')),
+                  ],
+                  rows: items.map((e) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text('${e.sn}')),
+                        DataCell(SizedBox(
+                          width: 120.w,
+                          child: Text(e.name, overflow: TextOverflow.ellipsis),
+                        )),
+                        DataCell(Text(_int(e.debit))),
+                        DataCell(Text(_int(e.credit))),
+                        DataCell(Text(_int(e.receivable))),
+                        DataCell(Text(_int(e.payout))),
+                        DataCell(Text(_int(e.balanceReceive))),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
-            headingTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontWeight: FontWeight.w700,
-              fontSize: 12.sp,
-            ),
-            dataTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontSize: 12.sp,
-            ),
-            columns: const [
-              DataColumn(label: Text('SN')),
-              DataColumn(label: Text('AGENT')),
-              DataColumn(label: Text('SALE')),
-              DataColumn(label: Text('COLLECTION')),
-              DataColumn(label: Text('RECEIVABLE')),
-              DataColumn(label: Text('PAYOUT')),
-              DataColumn(label: Text('BAL. RECEIVE')),
-            ],
-            rows: items.map((e) {
-              return DataRow(
-                cells: [
-                  DataCell(Text('${e.sn}')),
-                  DataCell(SizedBox(width: 120.w, child: Text(e.name, overflow: TextOverflow.ellipsis))),
-                  DataCell(Text(_fmt(e.debit))),
-                  DataCell(Text(_fmt(e.credit))),
-                  DataCell(Text(_fmt(e.receivable))),
-                  DataCell(Text(_fmt(e.payout))),
-                  DataCell(Text(_fmt(e.balanceReceive))),
-                ],
-              );
-            }).toList(),
           ),
         ),
       ),
     );
   }
 }
+
 
 /// =================================================================
 ///                           TILE VIEW

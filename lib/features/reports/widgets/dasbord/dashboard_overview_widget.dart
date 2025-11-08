@@ -11,10 +11,10 @@ class DashboardOverview extends StatelessWidget {
   final Future<void> Function()? onRefresh;
   final bool embedded;
 
-  // Headline values (big tile)
-  final double totalStock;
-  final double issuedStock;
-  final double currentStock;
+  // Headline values (big tile) -> num to accept double/int, display as int
+  final num totalStock;
+  final num issuedStock;
+  final num currentStock;
 
   // Remaining metric cards (grid)
   final List<DashboardMetric> metrics;
@@ -67,7 +67,6 @@ class DashboardOverview extends StatelessWidget {
         color1: Colors.cyanAccent,          // changed colors
         color2: Colors.teal,
       ),
-
     ];
 
     return DashboardOverview(
@@ -127,7 +126,7 @@ class DashboardOverview extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,            // ← as requested
+              crossAxisCount: 4,
               crossAxisSpacing: 12.w,
               mainAxisSpacing: 12.h,
               childAspectRatio: 0.50.h,
@@ -147,7 +146,10 @@ class DashboardOverview extends StatelessWidget {
       return RefreshIndicator(
         color: AppTheme.adminGreen,
         onRefresh: onRefresh!,
-        child: SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: content),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: content,
+        ),
       );
     }
 
@@ -157,7 +159,7 @@ class DashboardOverview extends StatelessWidget {
 
 class DashboardMetric {
   final String title;
-  final double value;
+  final num value; // accept double/int; display as int
   final IconData icon;
   final Color color1;
   final Color color2;
@@ -173,9 +175,9 @@ class DashboardMetric {
 
 /// Big combined tile for (Total, Issued, Current) stock
 class _MetricBigCard extends StatelessWidget {
-  final double totalStock;
-  final double issuedStock;
-  final double currentStock;
+  final num totalStock;
+  final num issuedStock;
+  final num currentStock;
 
   /// Choose a preset theme or pass custom colors.
   final _BigCardTheme theme;
@@ -186,6 +188,8 @@ class _MetricBigCard extends StatelessWidget {
     required this.currentStock,
     this.theme = _BigCardTheme.emerald, // default
   });
+
+  String _fmtInt(num v) => v.round().toString();
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +208,7 @@ class _MetricBigCard extends StatelessWidget {
       letterSpacing: .3,
     );
 
-    Widget cell(String label, double value, IconData icon) {
+    Widget cell(String label, num value, IconData icon) {
       return Container(
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
@@ -232,7 +236,7 @@ class _MetricBigCard extends StatelessWidget {
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
-                    child: Text(value.toStringAsFixed(2), style: valueStyle),
+                    child: Text(_fmtInt(value), style: valueStyle),
                   ),
                 ],
               ),
@@ -390,11 +394,12 @@ _BigCardColors _themeColors(_BigCardTheme t) {
   }
 }
 
-
 /// Small metric tile for the remaining items
 class _MetricCard extends StatelessWidget {
   final DashboardMetric data;
   const _MetricCard({required this.data});
+
+  String _fmtInt(num v) => v.round().toString();
 
   @override
   Widget build(BuildContext context) {
@@ -431,11 +436,12 @@ class _MetricCard extends StatelessWidget {
             padding: EdgeInsets.all(14.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(data.icon, size: 28.sp, color: Colors.white),
                 SizedBox(height: 6.h),
                 Text(
+                  textAlign: TextAlign.center,
                   data.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -443,7 +449,6 @@ class _MetricCard extends StatelessWidget {
                     color: Colors.white.withOpacity(.95),
                     fontSize: 8.sp,
                     fontWeight: FontWeight.w600,
-                    // height: 1.2,
                   ),
                 ),
                 const Spacer(),
@@ -451,7 +456,7 @@ class _MetricCard extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    data.value.toStringAsFixed(2),
+                    _fmtInt(data.value), // integers only
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20.sp,

@@ -96,6 +96,10 @@ class PrizeTicketCard extends StatelessWidget {
   final String dateIso;       // DATE (ISO)
   final String claimStatus;   // CLAIM_STATUS
 
+  // NEW (optional)
+  final String? agentName;    // AGENT
+  final String? claimedOnIso; // CLAIMED_ON (ISO or "yyyy-MM-dd hh:mm:ss a")
+
   const PrizeTicketCard({
     super.key,
     required this.luckySlno,
@@ -104,6 +108,8 @@ class PrizeTicketCard extends StatelessWidget {
     required this.customerMob,
     required this.dateIso,
     required this.claimStatus,
+    this.agentName,
+    this.claimedOnIso,
   });
 
   @override
@@ -114,11 +120,10 @@ class PrizeTicketCard extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       margin: EdgeInsets.only(bottom: 10.h),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: const [Color(0x1AFFFFFF), Color(0x0DFFFFFF)],
-          stops: const [0, 1],
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [Color(0x1AFFFFFF), Color(0x0DFFFFFF)],
+          stops: [0, 1],
         ),
         color: AppTheme.adminGreenDarker.withOpacity(0.35),
         borderRadius: BorderRadius.circular(16.r),
@@ -245,8 +250,85 @@ class PrizeTicketCard extends StatelessWidget {
               ),
             ],
           ),
+
+          // Agent (NEW)
+          if (agentName != null && agentName!.trim().isNotEmpty) ...[
+            SizedBox(height: 8.h),
+            Row(
+              children: [
+                Icon(Icons.badge_rounded, size: 18.sp, color: AppTheme.adminWhite),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    agentName!.trim(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppTheme.adminWhite.withOpacity(.90),
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // Claimed On (NEW)
+          if (claimedOnIso != null && claimedOnIso!.trim().isNotEmpty) ...[
+            SizedBox(height: 8.h),
+            Row(
+              children: [
+                Icon(Icons.schedule_rounded, size: 18.sp, color: AppTheme.adminWhite),
+                SizedBox(width: 8.w),
+                Text(
+                  _formatClaimedOnTimeExact(claimedOnIso!), // ← exact time shown
+                  style: TextStyle(
+                    color: AppTheme.adminWhite.withOpacity(0.85),
+                    fontSize: 13.5.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
         ],
       ),
     );
   }
+
+  /// Formats ISO or "yyyy-MM-dd hh:mm:ss a" into "dd MMM yyyy, HH:mm"
+  // Use this for the "Claimed On" time display
+  String _formatClaimedOnTimeExact(String raw) {
+    final s = raw.trim();
+
+    // Case 1: already like "yyyy-MM-dd HH:mm:ss AM/PM" → extract the time part exactly
+    final r12 = RegExp(r'\b(\d{2}):(\d{2}):(\d{2})\s?(AM|PM)\b', caseSensitive: false);
+    final m12 = r12.firstMatch(s);
+    if (m12 != null) {
+      final hh = m12.group(1)!;
+      final mm = m12.group(2)!;
+      final ss = m12.group(3)!;
+      final ap = m12.group(4)!.toUpperCase();
+      return '$hh:$mm:$ss $ap';
+    }
+
+    // Case 2: ISO → convert to 12h with seconds and AM/PM
+    final dt = DateTime.tryParse(s);
+    if (dt != null) {
+      var h = dt.hour;
+      final ap = (h >= 12) ? 'PM' : 'AM';
+      h = h % 12; if (h == 0) h = 12;
+      final hh = h.toString().padLeft(2, '0');
+      final mm = dt.minute.toString().padLeft(2, '0');
+      final ss = dt.second.toString().padLeft(2, '0');
+      return '$hh:$mm:$ss $ap';
+    }
+
+    // Fallback: show raw
+    return s;
+  }
+
 }
+

@@ -632,82 +632,111 @@ class _ViewChip extends StatelessWidget {
 
 /// ---------------- Table view ----------------
 
-class _IssueTableView extends StatelessWidget {
+class _IssueTableView extends StatefulWidget {
   final List<AgentStockIssueItem> items;
-
   const _IssueTableView({required this.items});
 
   @override
+  State<_IssueTableView> createState() => _IssueTableViewState();
+}
+
+class _IssueTableViewState extends State<_IssueTableView> {
+  final _hCtrl = ScrollController();
+  final _vCtrl = ScrollController();
+
+  @override
+  void dispose() {
+    _hCtrl.dispose();
+    _vCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final items = widget.items;
+
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 720.w),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 14.w,
-            horizontalMargin: 12.w,
-            headingRowHeight: 36.h,
-            dataRowMinHeight: 36.h,
-            dataRowMaxHeight: 40.h,
-            headingRowColor: WidgetStateProperty.all(
-              AppTheme.adminWhite.withOpacity(.08),
-            ),
-            headingTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontWeight: FontWeight.w700,
-              fontSize: 12.sp,
-            ),
-            dataTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontSize: 12.sp,
-            ),
-            columns: const [
-              DataColumn(label: Text('DATE')),
-              DataColumn(label: Text('PRODUCT')),
-              DataColumn(label: Text('DISTRIBUTOR')),
-              DataColumn(label: Text('CODE')),
-              DataColumn(label: Text('COUNT')),
-            ],
-            rows: items.map((e) {
-              return DataRow(
-                cells: [
-                  DataCell(Text(e.issueDate)), // dd/MM/yyyy from API
-                  DataCell(
-                    SizedBox(
-                      width: 140.w,
-                      child: Text(
-                        e.productName,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+        child: Scrollbar(
+          controller: _vCtrl,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _vCtrl, // vertical scroll
+            padding: EdgeInsets.zero,
+            child: Scrollbar(
+              controller: _hCtrl,
+              thumbVisibility: true,
+              notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: _hCtrl, // horizontal scroll
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.zero,
+                child: DataTable(
+                  columnSpacing: 14.w,
+                  horizontalMargin: 12.w,
+                  headingRowHeight: 36.h,
+                  dataRowMinHeight: 36.h,
+                  dataRowMaxHeight: 40.h,
+                  headingRowColor: WidgetStateProperty.all(
+                    AppTheme.adminWhite.withOpacity(.08),
                   ),
-                  DataCell(
-                    SizedBox(
-                      width: 130.w,
-                      child: Text(e.name, overflow: TextOverflow.ellipsis),
-                    ),
+                  headingTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
                   ),
-                  DataCell(
-                    SizedBox(
-                      width: 100.w,
-                      child: Text(
-                        e.distributorCode,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+                  dataTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontSize: 12.sp,
                   ),
-                  DataCell(Text(e.issueCount.toStringAsFixed(2))),
-                ],
-              );
-            }).toList(),
+                  columns: const [
+                    DataColumn(label: Text('DATE')),
+                    DataColumn(label: Text('PRODUCT')),
+                    DataColumn(label: Text('DISTRIBUTOR')),
+                    DataColumn(label: Text('CODE')),
+                    DataColumn(label: Text('COUNT')),
+                  ],
+                  rows: items.map((e) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(e.issueDate)), // dd/MM/yyyy
+                        DataCell(
+                          SizedBox(
+                            width: 140.w,
+                            child: Text(e.productName, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                        DataCell(
+                          SizedBox(
+                            width: 130.w,
+                            child: Text(e.name, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                        DataCell(
+                          SizedBox(
+                            width: 100.w,
+                            child: Text(e.distributorCode, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                        // If you want integers only:
+                        DataCell(Text(e.issueCount.round().toString())),
+                        // If you prefer the old decimal style, replace the above with:
+                        // DataCell(Text(e.issueCount.toStringAsFixed(2))),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 }
+
 
 
 /// ---------------- Tile view ----------------

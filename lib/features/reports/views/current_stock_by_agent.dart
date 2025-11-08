@@ -491,62 +491,96 @@ class _ViewChip extends StatelessWidget {
 
 /// ---------------- Table view ----------------
 
-class _StockTableView extends StatelessWidget {
+class _StockTableView extends StatefulWidget {
   final List<AgentStockSummaryItem> items;
   const _StockTableView({required this.items});
 
   @override
+  State<_StockTableView> createState() => _StockTableViewState();
+}
+
+class _StockTableViewState extends State<_StockTableView> {
+  final _hCtrl = ScrollController();
+  final _vCtrl = ScrollController();
+
+  String _int(num v) => v.round().toString();
+
+  @override
+  void dispose() {
+    _hCtrl.dispose();
+    _vCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final items = widget.items;
+
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 820.w),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 14.w,
-            horizontalMargin: 12.w,
-            headingRowHeight: 36.h,
-            dataRowMinHeight: 36.h,
-            dataRowMaxHeight: 40.h,
-            headingRowColor: WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
-            headingTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontWeight: FontWeight.w700,
-              fontSize: 12.sp,
+        child: Scrollbar(
+          controller: _vCtrl,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _vCtrl, // vertical scroll
+            child: Scrollbar(
+              controller: _hCtrl,
+              thumbVisibility: true,
+              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: _hCtrl, // horizontal scroll
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 14.w,
+                  horizontalMargin: 12.w,
+                  headingRowHeight: 36.h,
+                  dataRowMinHeight: 36.h,
+                  dataRowMaxHeight: 40.h,
+                  headingRowColor:
+                  WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
+                  headingTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
+                  ),
+                  dataTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontSize: 12.sp,
+                  ),
+                  columns: const [
+                    DataColumn(label: Text('PRODUCT')),
+                    DataColumn(label: Text('AGENT')),
+                    DataColumn(label: Text('ISSUED')),
+                    DataColumn(label: Text('SALE')),
+                    DataColumn(label: Text('BALANCE')),
+                  ],
+                  rows: items.map((e) {
+                    return DataRow(cells: [
+                      DataCell(SizedBox(
+                        width: 130.w,
+                        child: Text(e.productName, overflow: TextOverflow.ellipsis),
+                      )),
+                      DataCell(SizedBox(
+                        width: 130.w,
+                        child: Text(e.name, overflow: TextOverflow.ellipsis),
+                      )),
+                      DataCell(Text(_int(e.issued))),
+                      DataCell(Text(_int(e.sale))),
+                      DataCell(Text(_int(e.balanceStock))),
+                    ]);
+                  }).toList(),
+                ),
+              ),
             ),
-            dataTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontSize: 12.sp,
-            ),
-            columns: const [
-              DataColumn(label: Text('PRODUCT')),
-              DataColumn(label: Text('AGENT')),
-              DataColumn(label: Text('ISSUED')),
-              DataColumn(label: Text('SALE')),
-              DataColumn(label: Text('BALANCE')),
-            ],
-            rows: items.map((e) {
-              return DataRow(cells: [
-                DataCell(SizedBox(
-                  width: 130.w,
-                  child: Text(e.productName, overflow: TextOverflow.ellipsis),
-                )),
-                DataCell(SizedBox(
-                  width: 130.w,
-                  child: Text(e.name, overflow: TextOverflow.ellipsis),
-                )),
-                DataCell(Text(e.issued.toStringAsFixed(2))),
-                DataCell(Text(e.sale.toStringAsFixed(2))),
-                DataCell(Text(e.balanceStock.toStringAsFixed(2))),
-              ]);
-            }).toList(),
           ),
         ),
       ),
     );
   }
 }
+
 
 
 /// ---------------- Tile view ----------------
@@ -572,27 +606,6 @@ class _StockTileView extends StatelessWidget {
           ),
           child: ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-
-            // Leading initial
-            // leading: Container(
-            //   width: 40.w,
-            //   height: 40.w,
-            //   alignment: Alignment.center,
-            //   decoration: BoxDecoration(
-            //     color: AppTheme.adminWhite.withOpacity(.08),
-            //     borderRadius: BorderRadius.circular(10.r),
-            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
-            //   ),
-            //   child: Text(
-            //     (e.productName.isNotEmpty ? e.productName[0] : '-').toUpperCase(),
-            //     style: TextStyle(
-            //       color: AppTheme.adminWhite,
-            //       fontWeight: FontWeight.w700,
-            //       fontSize: 14.sp,
-            //     ),
-            //   ),
-            // ),
-
             // Product
             title: Text(
               e.productName,

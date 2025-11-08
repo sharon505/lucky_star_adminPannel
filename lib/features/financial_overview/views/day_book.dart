@@ -384,10 +384,17 @@ class _ViewChip extends StatelessWidget {
 }
 
 /// ---------------- Table view ----------------
-/// ---------------- Table view (now scrolls vertically + horizontally) ----------------
-class _DayBookTable extends StatelessWidget {
+class _DayBookTable extends StatefulWidget {
   final List<DayBookItem> items;
   const _DayBookTable({required this.items});
+
+  @override
+  State<_DayBookTable> createState() => _DayBookTableState();
+}
+
+class _DayBookTableState extends State<_DayBookTable> {
+  final _hCtrl = ScrollController();
+  final _vCtrl = ScrollController();
 
   String _fmt(DateTime d) {
     String two(int n) => n < 10 ? '0$n' : '$n';
@@ -395,52 +402,77 @@ class _DayBookTable extends StatelessWidget {
   }
 
   @override
+  void dispose() {
+    _hCtrl.dispose();
+    _vCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(                // ← vertical scroll
-      padding: EdgeInsets.only(bottom: 12.h),    // space above FAB
-      child: Align(
-        alignment: Alignment.topLeft,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 980.w),
-          child: SingleChildScrollView(          // ← horizontal scroll
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columnSpacing: 14.w,
-              horizontalMargin: 12.w,
-              headingRowHeight: 36.h,
-              dataRowMinHeight: 36.h,
-              dataRowMaxHeight: 40.h,
-              headingRowColor: WidgetStateProperty.all(
-                AppTheme.adminWhite.withOpacity(.08),
-              ),
-              headingTextStyle: TextStyle(
-                color: AppTheme.adminWhite,
-                fontWeight: FontWeight.w700,
-                fontSize: 12.sp,
-              ),
-              dataTextStyle: TextStyle(
-                color: AppTheme.adminWhite,
-                fontSize: 12.sp,
-              ),
-              columns: const [
-                DataColumn(label: Text('DATE')),
-                DataColumn(label: Text('DESCRIPTION')),
-                DataColumn(label: Text('DEBIT')),
-                DataColumn(label: Text('CREDIT')),
-              ],
-              rows: items.map((e) {
-                return DataRow(
-                  cells: [
-                    DataCell(Text(_fmt(e.tranDate))),
-                    DataCell(SizedBox(
-                      width: 240.w,
-                      child: Text(e.description, overflow: TextOverflow.ellipsis),
-                    )),
-                    DataCell(Text(e.debit.toStringAsFixed(2))),
-                    DataCell(Text(e.credit.toStringAsFixed(2))),
+    final items = widget.items;
+
+    return Scrollbar(
+      controller: _vCtrl,
+      thumbVisibility: true,
+      child: SingleChildScrollView(                // vertical scroll
+        controller: _vCtrl,
+        padding: EdgeInsets.only(bottom: 12.h),    // space above FAB
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 980.w),
+            child: Scrollbar(
+              controller: _hCtrl,
+              thumbVisibility: true,
+              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(        // horizontal scroll
+                controller: _hCtrl,
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 14.w,
+                  horizontalMargin: 12.w,
+                  headingRowHeight: 36.h,
+                  dataRowMinHeight: 36.h,
+                  dataRowMaxHeight: 40.h,
+                  headingRowColor: WidgetStateProperty.all(
+                    AppTheme.adminWhite.withOpacity(.08),
+                  ),
+                  headingTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
+                  ),
+                  dataTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontSize: 12.sp,
+                  ),
+                  columns: const [
+                    DataColumn(label: Text('DATE')),
+                    DataColumn(label: Text('DESCRIPTION')),
+                    DataColumn(label: Text('DEBIT')),
+                    DataColumn(label: Text('CREDIT')),
                   ],
-                );
-              }).toList(),
+                  rows: items.map((e) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(_fmt(e.tranDate))),
+                        DataCell(
+                          SizedBox(
+                            width: 240.w,
+                            child: Text(
+                              e.description,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        DataCell(Text(e.debit.toStringAsFixed(2))),
+                        DataCell(Text(e.credit.toStringAsFixed(2))),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           ),
         ),
@@ -448,6 +480,7 @@ class _DayBookTable extends StatelessWidget {
     );
   }
 }
+
 
 
 /// ---------------- Tile view ----------------

@@ -388,7 +388,7 @@ class _ViewChip extends StatelessWidget {
 }
 
 /// ---------------- Table view ----------------
-class _CashBookTable extends StatelessWidget {
+class _CashBookTable extends StatefulWidget {
   final List<DayBookEntry> items;
   final double totalDebit;
   final double totalCredit;
@@ -400,73 +400,115 @@ class _CashBookTable extends StatelessWidget {
   });
 
   @override
+  State<_CashBookTable> createState() => _CashBookTableState();
+}
+
+class _CashBookTableState extends State<_CashBookTable> {
+  final _hCtrl = ScrollController();
+  final _vCtrl = ScrollController();
+
+  @override
+  void dispose() {
+    _hCtrl.dispose();
+    _vCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final items = widget.items;
+
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 980.w),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 14.w,
-            horizontalMargin: 12.w,
-            headingRowHeight: 36.h,
-            dataRowMinHeight: 36.h,
-            dataRowMaxHeight: 40.h,
-            headingRowColor: WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
-            headingTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontWeight: FontWeight.w700,
-              fontSize: 12.sp,
-            ),
-            dataTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontSize: 12.sp,
-            ),
-            columns: const [
-              DataColumn(label: Text('PARTICULARS')),
-              DataColumn(label: Text('VOUCHER')),
-              DataColumn(label: Text('DEBIT')),
-              DataColumn(label: Text('CREDIT')),
-            ],
-            rows: [
-              ...items.map((e) => DataRow(
-                cells: [
-                  DataCell(SizedBox(
-                    width: 130.w,
-                    child: Text(e.particulars, overflow: TextOverflow.ellipsis),
-                  )),
-                  DataCell(SizedBox(
-                    width: 90.w,
-                    child: Text(e.voucherNo, overflow: TextOverflow.ellipsis),
-                  )),
-                  DataCell(Text(e.debit.toStringAsFixed(2))),
-                  DataCell(Text(e.credit.toStringAsFixed(2))),
-                ],
-              )),
-              // footer (totals)
-              DataRow(
-                color: WidgetStatePropertyAll(AppTheme.adminWhite.withOpacity(.06)),
-                cells: [
-                  const DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.w800))),
-                  const DataCell(Text('—', style: TextStyle(fontWeight: FontWeight.w800))),
-                  DataCell(Text(
-                    totalDebit.toStringAsFixed(2),
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  )),
-                  DataCell(Text(
-                    totalCredit.toStringAsFixed(2),
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  )),
-                ],
+        child: Scrollbar(
+          controller: _vCtrl,
+          thumbVisibility: true,
+          child: SingleChildScrollView( // vertical
+            controller: _vCtrl,
+            child: Scrollbar(
+              controller: _hCtrl,
+              thumbVisibility: true,
+              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView( // horizontal
+                controller: _hCtrl,
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 14.w,
+                  horizontalMargin: 12.w,
+                  headingRowHeight: 36.h,
+                  dataRowMinHeight: 36.h,
+                  dataRowMaxHeight: 40.h,
+                  headingRowColor:
+                  WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
+                  headingTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
+                  ),
+                  dataTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontSize: 12.sp,
+                  ),
+                  columns: const [
+                    DataColumn(label: Text('PARTICULARS')),
+                    DataColumn(label: Text('VOUCHER')),
+                    DataColumn(label: Text('DEBIT')),
+                    DataColumn(label: Text('CREDIT')),
+                  ],
+                  rows: [
+                    ...items.map((e) => DataRow(
+                      cells: [
+                        DataCell(SizedBox(
+                          width: 130.w,
+                          child: Text(e.particulars, overflow: TextOverflow.ellipsis),
+                        )),
+                        DataCell(SizedBox(
+                          width: 90.w,
+                          child: Text(e.voucherNo, overflow: TextOverflow.ellipsis),
+                        )),
+                        DataCell(Text(e.debit.toStringAsFixed(2))),
+                        DataCell(Text(e.credit.toStringAsFixed(2))),
+                      ],
+                    )),
+                    // footer (totals)
+                    DataRow(
+                      color: WidgetStatePropertyAll(
+                        AppTheme.adminWhite.withOpacity(.06),
+                      ),
+                      cells: [
+                        const DataCell(
+                          Text('TOTAL', style: TextStyle(fontWeight: FontWeight.w800)),
+                        ),
+                        const DataCell(
+                          Text('—', style: TextStyle(fontWeight: FontWeight.w800)),
+                        ),
+                        DataCell(
+                          Text(
+                            widget.totalDebit.toStringAsFixed(2),
+                            style: const TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                        DataCell(
+                          Text(
+                            widget.totalCredit.toStringAsFixed(2),
+                            style: const TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+
 
 /// ---------------- Tile view ----------------
 class _CashBookTiles extends StatelessWidget {

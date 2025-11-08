@@ -539,69 +539,106 @@ class _ViewChip extends StatelessWidget {
 }
 
 /// ---------------- Table view ----------------
-/// ---------------- Table view ----------------
-class _CashCollectionTable extends StatelessWidget {
+class _CashCollectionTable extends StatefulWidget {
   final List<CashReceivedItem> items;
   const _CashCollectionTable({required this.items});
+
+  @override
+  State<_CashCollectionTable> createState() => _CashCollectionTableState();
+}
+
+class _CashCollectionTableState extends State<_CashCollectionTable> {
+  final _hCtrl = ScrollController();
+  final _vCtrl = ScrollController();
 
   String _fmt(DateTime d) {
     String two(int n) => n < 10 ? '0$n' : '$n';
     return '${two(d.day)}/${two(d.month)}/${d.year}';
   }
 
+  String _int(num v) => v.round().toString();
+
+  @override
+  void dispose() {
+    _hCtrl.dispose();
+    _vCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final items = widget.items;
+
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 880.w),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 14.w,
-            horizontalMargin: 12.w,
-            headingRowHeight: 36.h,
-            dataRowMinHeight: 36.h,
-            dataRowMaxHeight: 40.h,
-            headingRowColor:
-            WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
-            headingTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontWeight: FontWeight.w700,
-              fontSize: 12.sp,
+        child: Scrollbar(
+          controller: _vCtrl,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _vCtrl, // vertical
+            child: Scrollbar(
+              controller: _hCtrl,
+              thumbVisibility: true,
+              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: _hCtrl, // horizontal
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 14.w,
+                  horizontalMargin: 12.w,
+                  headingRowHeight: 36.h,
+                  dataRowMinHeight: 36.h,
+                  dataRowMaxHeight: 40.h,
+                  headingRowColor:
+                  WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
+                  headingTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
+                  ),
+                  dataTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontSize: 12.sp,
+                  ),
+                  columns: const [
+                    DataColumn(label: Text('DATE')),
+                    DataColumn(label: Text('PRODUCT')),
+                    DataColumn(label: Text('AGENT')),
+                    DataColumn(label: Text('RECEIVED AMT')),
+                  ],
+                  rows: items.map((e) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(_fmt(e.date))),
+                        DataCell(
+                          SizedBox(
+                            width: 150.w,
+                            child: Text(e.productName, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                        DataCell(
+                          SizedBox(
+                            width: 150.w,
+                            child: Text(e.name, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                        // Integers only
+                        DataCell(Text(_int(e.receivedAmt))),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
-            dataTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontSize: 12.sp,
-            ),
-            columns: const [
-              DataColumn(label: Text('DATE')),
-              DataColumn(label: Text('PRODUCT')),
-              DataColumn(label: Text('AGENT')),
-              DataColumn(label: Text('RECEIVED AMT')),
-            ],
-            rows: items.map((e) {
-              return DataRow(
-                cells: [
-                  DataCell(Text(_fmt(e.date))),
-                  DataCell(SizedBox(
-                      width: 150.w,
-                      child: Text(e.productName,
-                          overflow: TextOverflow.ellipsis))),
-                  DataCell(SizedBox(
-                      width: 150.w,
-                      child:
-                      Text(e.name, overflow: TextOverflow.ellipsis))),
-                  DataCell(Text(e.receivedAmt.toStringAsFixed(2))),
-                ],
-              );
-            }).toList(),
           ),
         ),
       ),
     );
   }
 }
+
 
 /// ---------------- Tile (ListTile) view ----------------
 class _CashCollectionTiles extends StatelessWidget {

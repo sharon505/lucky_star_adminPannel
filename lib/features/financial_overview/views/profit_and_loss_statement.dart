@@ -434,51 +434,82 @@ class _ViewChip extends StatelessWidget {
 }
 
 /// ---------------- Table view ----------------
-class _PandLTable extends StatelessWidget {
+class _PandLTable extends StatefulWidget {
   final List<ProfitLossRow> items;
   const _PandLTable({required this.items});
 
   @override
+  State<_PandLTable> createState() => _PandLTableState();
+}
+
+class _PandLTableState extends State<_PandLTable> {
+  final _hCtrl = ScrollController();
+  final _vCtrl = ScrollController();
+
+  @override
+  void dispose() {
+    _hCtrl.dispose();
+    _vCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final items = widget.items;
+
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 980.w),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 14.w,
-            horizontalMargin: 12.w,
-            headingRowHeight: 36.h,
-            dataRowMinHeight: 36.h,
-            dataRowMaxHeight: 40.h,
-            headingRowColor: WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
-            headingTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontWeight: FontWeight.w700,
-              fontSize: 12.sp,
-            ),
-            dataTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontSize: 12.sp,
-            ),
-            columns: const [
-              DataColumn(label: Text('DESCRIPTION')),
-              DataColumn(label: Text('AMOUNT')),
-            ],
-            rows: items.map((e) {
-              return DataRow(
-                cells: [
-                  DataCell(
-                    SizedBox(
-                      width: 255.w,
-                      child: Text(e.description, overflow: TextOverflow.ellipsis),
-                    ),
+        child: Scrollbar(
+          controller: _vCtrl,
+          thumbVisibility: true,
+          child: SingleChildScrollView( // vertical
+            controller: _vCtrl,
+            child: Scrollbar(
+              controller: _hCtrl,
+              thumbVisibility: true,
+              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView( // horizontal
+                controller: _hCtrl,
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 14.w,
+                  horizontalMargin: 12.w,
+                  headingRowHeight: 36.h,
+                  dataRowMinHeight: 36.h,
+                  dataRowMaxHeight: 40.h,
+                  headingRowColor:
+                  WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
+                  headingTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
                   ),
-                  DataCell(Text(e.amount.toStringAsFixed(2))),
-                ],
-              );
-            }).toList(),
+                  dataTextStyle: TextStyle(
+                    color: AppTheme.adminWhite,
+                    fontSize: 12.sp,
+                  ),
+                  columns: const [
+                    DataColumn(label: Text('DESCRIPTION')),
+                    DataColumn(label: Text('AMOUNT')),
+                  ],
+                  rows: items.map((e) {
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          SizedBox(
+                            width: 255.w,
+                            child: Text(e.description, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                        DataCell(Text(e.amount.toStringAsFixed(2))),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -524,25 +555,6 @@ class _PandLTiles extends StatelessWidget {
           ),
           child: ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-            // monogram
-            // leading: Container(
-            //   width: 40.w,
-            //   height: 40.w,
-            //   alignment: Alignment.center,
-            //   decoration: BoxDecoration(
-            //     color: AppTheme.adminWhite.withOpacity(.08),
-            //     borderRadius: BorderRadius.circular(10.r),
-            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
-            //   ),
-            //   child: Text(
-            //     (e.description.isNotEmpty ? e.description[0] : '-').toUpperCase(),
-            //     style: TextStyle(
-            //       color: AppTheme.adminWhite,
-            //       fontWeight: FontWeight.w700,
-            //       fontSize: 14.sp,
-            //     ),
-            //   ),
-            // ),
             title: Text(
               e.description,
               maxLines: 1,

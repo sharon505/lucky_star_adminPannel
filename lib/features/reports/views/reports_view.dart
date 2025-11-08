@@ -133,20 +133,68 @@ class ReportsView extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final p = vm.results[index];
+
               return PrizeTicketCard(
-                customerMob: p.customerMob,
-                claimStatus: p.claimStatus,
-                dateIso: p.date.toString(),
                 luckySlno: p.luckySlno,
                 prizeAmount: p.prizeAmount,
                 customerName: p.customerName,
+                customerMob: p.customerMob,
+                dateIso: _safeDateIso(p),
+                claimStatus: _safeClaimStatus(p),
+                agentName: _safeAgent(p),
+                claimedOnIso: _safeClaimedOnIso(p),
               );
             },
+
           ),
         ],
       ],
     );
   }
+
+  String _safeClaimStatus(Object p) {
+    try {
+      final v = (p as dynamic).claimStatusRaw;
+      if (v is String && v.trim().isNotEmpty) return v;
+    } catch (_) {}
+    try {
+      final v2 = (p as dynamic).claimStatus;
+      if (v2 is String) return v2;
+    } catch (_) {}
+    return 'PENDING'; // sensible default
+  }
+
+  String _safeDateIso(Object p) {
+    try {
+      final d = (p as dynamic).date;
+      if (d is DateTime) return d.toIso8601String();
+      if (d is String) return d;
+    } catch (_) {}
+    return '';
+  }
+
+  String? _safeAgent(Object p) {
+    try {
+      final a = (p as dynamic).agent;
+      if (a == null) return null;
+      return a.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _safeClaimedOnIso(Object p) {
+    try {
+      final c = (p as dynamic).claimedOn;
+      if (c == null) return null;
+      if (c is DateTime) return c.toIso8601String();
+      return c.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+
 
   ///stockReport
   Widget _stocks(BuildContext context, {List<Tap>? onTap}) {

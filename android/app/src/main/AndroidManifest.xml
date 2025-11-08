@@ -7,7 +7,7 @@
     <application
         android:name="${applicationName}"
         android:label="Lucky Star Admin"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:enableOnBackInvokedCallback="true">
 
         <activity
