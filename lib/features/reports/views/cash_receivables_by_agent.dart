@@ -19,11 +19,14 @@ class CashReceivablesByAgent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(providers: [
-      ChangeNotifierProvider(create: (_) => ProductViewModel()..load()),
-      ChangeNotifierProvider(create: (_) => DistributorViewModel()..load()),
-      ChangeNotifierProvider(create: (_) => CashReceivablesViewModel()),
-    ],child: _CashReceivablesScaffold(),);
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProductViewModel()..load()),
+        ChangeNotifierProvider(create: (_) => DistributorViewModel()..load()),
+        ChangeNotifierProvider(create: (_) => CashReceivablesViewModel()),
+      ],
+      child: const _CashReceivablesScaffold(),
+    );
   }
 }
 
@@ -61,13 +64,13 @@ class _CashReceivablesScaffoldState extends State<_CashReceivablesScaffold> {
       await Future.delayed(const Duration(milliseconds: 120));
     }
 
-    // If either list is still empty or errored, bail out silently.
+    // If either list is still empty or errored, bail out silently (user can filter manually).
     if (productsVm.filteredItems.isEmpty || agentsVm.filteredItems.isEmpty) {
-      setState(() => _bootstrapped = true);
+      if (mounted) setState(() => _bootstrapped = true);
       return;
     }
 
-    // De-dupe like your dialog does, then pick first available.
+    // De-dupe like in dialog, then pick first available.
     int _firstUniqueProductId() {
       final map = <int, ProductItem>{};
       for (final p in productsVm.filteredItems) {
@@ -110,9 +113,9 @@ class _CashReceivablesScaffoldState extends State<_CashReceivablesScaffold> {
       ),
       body: Padding(
         padding: EdgeInsets.all(12.w),
-        child: _ReceivablesTable(
+        child: _ReceivablesContent(
           items: vm.filteredItems,
-          isLoading: vm.isLoading && !_bootstrapped ? true : vm.isLoading,
+          isLoading: vm.isLoading || !_bootstrapped,
           error: vm.error,
           totalDebit: vm.totalDebit,
           totalCredit: vm.totalCredit,
@@ -127,12 +130,12 @@ class _CashReceivablesScaffoldState extends State<_CashReceivablesScaffold> {
 
 /// ---------------- Filter Dialog (Product + Agent) ----------------
 Future<void> _openFilterDialog(BuildContext context) async {
-  final receVm = context.read<CashReceivablesViewModel>();
+  final receVm    = context.read<CashReceivablesViewModel>();
   final productVm = context.read<ProductViewModel>();
-  final agentVm = context.read<DistributorViewModel>();
+  final agentVm   = context.read<DistributorViewModel>();
 
   int? selProductId = receVm.productId == 0 ? null : receVm.productId;
-  int? selAgentId   = receVm.agentId == 0 ? null : receVm.agentId;
+  int? selAgentId   = receVm.agentId   == 0 ? null : receVm.agentId;
 
   await showDialog(
     context: context,
@@ -302,8 +305,13 @@ InputDecoration _inputDeco(String label) {
   );
 }
 
-/// ---------------- Table ----------------
-class _ReceivablesTable extends StatelessWidget {
+/// =================================================================
+///                         CONTENT + TOGGLE
+/// =================================================================
+
+enum _ViewMode { table, tiles }
+
+class _ReceivablesContent extends StatefulWidget {
   final List<CashReceivableItem> items;
   final bool isLoading;
   final String? error;
@@ -314,7 +322,7 @@ class _ReceivablesTable extends StatelessWidget {
   final double totalBalanceReceive;
   final double totalReceivable;
 
-  const _ReceivablesTable({
+  const _ReceivablesContent({
     required this.items,
     required this.isLoading,
     required this.error,
@@ -325,24 +333,31 @@ class _ReceivablesTable extends StatelessWidget {
     required this.totalReceivable,
   });
 
+  @override
+  State<_ReceivablesContent> createState() => _ReceivablesContentState();
+}
+
+class _ReceivablesContentState extends State<_ReceivablesContent> {
+  _ViewMode _mode = _ViewMode.table;
+
   String _fmt(double v) => v.toStringAsFixed(2);
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    if (widget.isLoading) {
       return const Center(child: CircularProgressIndicator(color: AppTheme.adminGreen));
     }
-    if (error != null) {
-      return Center(child: Text(error!, style: const TextStyle(color: Colors.redAccent)));
+    if (widget.error != null) {
+      return Center(child: Text(widget.error!, style: const TextStyle(color: Colors.redAccent)));
     }
-    if (items.isEmpty) {
+    if (widget.items.isEmpty) {
       return const Center(child: Text('No data', style: TextStyle(color: AppTheme.adminWhite)));
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Summary
+        // Summary + view toggle
         Container(
           margin: EdgeInsets.only(bottom: 8.h),
           padding: EdgeInsets.all(10.w),
@@ -351,80 +366,300 @@ class _ReceivablesTable extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.08)),
           ),
-          child: Wrap(
-            spacing: 12.w,
-            runSpacing: 6.h,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Rows: ${items.length}',
-                  style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
-              Text('Debit: ${_fmt(totalDebit)}',
-                  style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
-              Text('Credit: ${_fmt(totalCredit)}',
-                  style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
-              Text('Payout: ${_fmt(totalPayout)}',
-                  style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
-              Text('Balance Receive: ${_fmt(totalBalanceReceive)}',
-                  style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
-              Text('Receivable: ${_fmt(totalReceivable)}',
-                  style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 5.w,
+                //runSpacing: 6.h,
+                children: [
+                  // Text('Rows: ${widget.items.length}',
+                  //     style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
+                  Text('Debit: ${_fmt(widget.totalDebit)}',
+                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
+                  Text('Credit: ${_fmt(widget.totalCredit)}',
+                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
+                  Text('Payout: ${_fmt(widget.totalPayout)}',
+                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
+                  Text('Balance Receive: ${_fmt(widget.totalBalanceReceive)}',
+                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
+                  Text('Receivable: ${_fmt(widget.totalReceivable)}',
+                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
+                ],
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.adminWhite.withOpacity(.06),
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+                ),
+                padding: EdgeInsets.all(2.w),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _ViewChip(
+                      label: 'Table',
+                      icon: Icons.table_chart,
+                      selected: _mode == _ViewMode.table,
+                      onTap: () => setState(() => _mode = _ViewMode.table),
+                    ),
+                    _ViewChip(
+                      label: 'Tiles',
+                      icon: Icons.grid_view_rounded,
+                      selected: _mode == _ViewMode.tiles,
+                      onTap: () => setState(() => _mode = _ViewMode.tiles),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
 
-        // Table
+        // Body
         Expanded(
-          child: Align(
-            alignment: Alignment.topLeft,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 820.w),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columnSpacing: 14.w,
-                  horizontalMargin: 12.w,
-                  headingRowHeight: 36.h,
-                  dataRowMinHeight: 36.h,
-                  dataRowMaxHeight: 40.h,
-                  headingRowColor: WidgetStateProperty.all(
-                    AppTheme.adminWhite.withOpacity(.08),
-                  ),
-                  headingTextStyle: TextStyle(
-                    color: AppTheme.adminWhite,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12.sp,
-                  ),
-                  dataTextStyle: TextStyle(
-                    color: AppTheme.adminWhite,
-                    fontSize: 12.sp,
-                  ),
-                  columns: const [
-                    DataColumn(label: Text('SN')),
-                    DataColumn(label: Text('AGENT')),
-                    DataColumn(label: Text('SALE')),
-                    DataColumn(label: Text('COLLECTION')),
-                    DataColumn(label: Text('RECEIVABLE')),
-                    DataColumn(label: Text('PAYOUT')),
-                    DataColumn(label: Text('BAL. RECEIVE')),
-                  ],
-                  rows: items.map((e) {
-                    return DataRow(
-                      cells: [
-                        DataCell(Text('${e.sn}')),
-                        DataCell(SizedBox(width: 180.w, child: Text(e.name, overflow: TextOverflow.ellipsis))),
-                        DataCell(Text(_fmt(e.debit))),
-                        DataCell(Text(_fmt(e.credit))),
-                        DataCell(Text(_fmt(e.receivable))),
-                        DataCell(Text(_fmt(e.payout))),
-                        DataCell(Text(_fmt(e.balanceReceive))),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: _mode == _ViewMode.table
+                ? _ReceivablesTableView(items: widget.items)
+                : _ReceivablesTileView(items: widget.items),
           ),
         ),
       ],
     );
   }
 }
+
+class _ViewChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ViewChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8.r),
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.adminGreen : Colors.transparent,
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 14.sp, color: selected ? Colors.black : AppTheme.adminWhite),
+            SizedBox(width: 6.w),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? Colors.black : AppTheme.adminWhite,
+                fontWeight: FontWeight.w600,
+                fontSize: 11.sp,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// =================================================================
+///                           TABLE VIEW
+/// =================================================================
+
+class _ReceivablesTableView extends StatelessWidget {
+  final List<CashReceivableItem> items;
+  const _ReceivablesTableView({required this.items});
+
+  String _fmt(double v) => v.toStringAsFixed(2);
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topLeft,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 820.w),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(
+            columnSpacing: 14.w,
+            horizontalMargin: 12.w,
+            headingRowHeight: 36.h,
+            dataRowMinHeight: 36.h,
+            dataRowMaxHeight: 40.h,
+            headingRowColor: WidgetStateProperty.all(
+              AppTheme.adminWhite.withOpacity(.08),
+            ),
+            headingTextStyle: TextStyle(
+              color: AppTheme.adminWhite,
+              fontWeight: FontWeight.w700,
+              fontSize: 12.sp,
+            ),
+            dataTextStyle: TextStyle(
+              color: AppTheme.adminWhite,
+              fontSize: 12.sp,
+            ),
+            columns: const [
+              DataColumn(label: Text('SN')),
+              DataColumn(label: Text('AGENT')),
+              DataColumn(label: Text('SALE')),
+              DataColumn(label: Text('COLLECTION')),
+              DataColumn(label: Text('RECEIVABLE')),
+              DataColumn(label: Text('PAYOUT')),
+              DataColumn(label: Text('BAL. RECEIVE')),
+            ],
+            rows: items.map((e) {
+              return DataRow(
+                cells: [
+                  DataCell(Text('${e.sn}')),
+                  DataCell(SizedBox(width: 120.w, child: Text(e.name, overflow: TextOverflow.ellipsis))),
+                  DataCell(Text(_fmt(e.debit))),
+                  DataCell(Text(_fmt(e.credit))),
+                  DataCell(Text(_fmt(e.receivable))),
+                  DataCell(Text(_fmt(e.payout))),
+                  DataCell(Text(_fmt(e.balanceReceive))),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// =================================================================
+///                           TILE VIEW
+/// =================================================================
+
+class _ReceivablesTileView extends StatelessWidget {
+  final List<CashReceivableItem> items;
+  const _ReceivablesTileView({required this.items});
+
+  String _fmt(double v) => v.toStringAsFixed(2);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
+      itemCount: items.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.h),
+      itemBuilder: (_, i) {
+        final e = items[i];
+        return Container(
+          decoration: BoxDecoration(
+            color: AppTheme.adminWhite.withOpacity(.06),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
+          ),
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+
+            // leading: Container(
+            //   width: 40.w,
+            //   height: 40.w,
+            //   alignment: Alignment.center,
+            //   decoration: BoxDecoration(
+            //     color: AppTheme.adminWhite.withOpacity(.08),
+            //     borderRadius: BorderRadius.circular(10.r),
+            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+            //   ),
+            //   child: Text(
+            //     (e.name.isNotEmpty ? e.name[0] : '-').toUpperCase(),
+            //     style: TextStyle(
+            //       color: AppTheme.adminWhite,
+            //       fontWeight: FontWeight.w700,
+            //       fontSize: 14.sp,
+            //     ),
+            //   ),
+            // ),
+
+            title: Text(
+              e.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppTheme.adminWhite,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+
+            // 👉 All metrics in one vertical column
+            subtitle: Padding(
+              padding: EdgeInsets.only(top: 8.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _metricRow('Sale', _fmt(e.debit)),
+                  SizedBox(height: 4.h),
+                  _metricRow('Collection', _fmt(e.credit)),
+                  SizedBox(height: 4.h),
+                  _metricRow('Payout', _fmt(e.payout)),
+                  SizedBox(height: 4.h),
+                  _metricRow('Bal. Receive', _fmt(e.balanceReceive)),
+                ],
+              ),
+            ),
+
+            // Receivable highlighted on the right
+            trailing: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: AppTheme.adminGreen.withOpacity(.28),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: AppTheme.adminGreen),
+              ),
+              child: Text(
+                _fmt(e.receivable),
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Label on the left, value right-aligned → feels “columnar”
+  Widget _metricRow(String label, String value) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            '$label',
+            style: TextStyle(
+              color: AppTheme.adminWhite.withOpacity(.78),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: AppTheme.adminWhite.withOpacity(.95),
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+

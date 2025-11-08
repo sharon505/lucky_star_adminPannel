@@ -571,7 +571,6 @@ class _SalesTableView extends StatelessWidget {
               fontSize: 12.sp,
             ),
             columns: const [
-              DataColumn(label: Text('SN')),
               DataColumn(label: Text('DATE')),
               DataColumn(label: Text('PRODUCT')),
               DataColumn(label: Text('AGENT')),
@@ -580,10 +579,9 @@ class _SalesTableView extends StatelessWidget {
             rows: items.map((e) {
               return DataRow(
                 cells: [
-                  DataCell(Text('${e.sn}')),
                   DataCell(Text(_fmt(e.date))),
-                  DataCell(SizedBox(width: 220.w, child: Text(e.productName, overflow: TextOverflow.ellipsis))),
-                  DataCell(SizedBox(width: 200.w, child: Text(e.name, overflow: TextOverflow.ellipsis))),
+                  DataCell(SizedBox(width: 140.w, child: Text(e.productName, overflow: TextOverflow.ellipsis))),
+                  DataCell(SizedBox(width: 110.w, child: Text(e.name, overflow: TextOverflow.ellipsis))),
                   DataCell(Text(e.stockSale.toStringAsFixed(2))),
                 ],
               );
@@ -594,6 +592,7 @@ class _SalesTableView extends StatelessWidget {
     );
   }
 }
+
 
 /// ---------------- Tile view ----------------
 class _SalesTileView extends StatelessWidget {
@@ -607,116 +606,111 @@ class _SalesTileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
-    const minTileW = 260.0;
-    final crossAxisCount = (screenW / minTileW).floor().clamp(1, 4);
-
-    return GridView.builder(
+    return ListView.separated(
       padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        childAspectRatio: 1.75,
-      ),
       itemCount: items.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (_, i) {
         final e = items[i];
+
         return Container(
           decoration: BoxDecoration(
             color: AppTheme.adminWhite.withOpacity(.06),
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
           ),
-          padding: EdgeInsets.all(12.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                e.productName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.adminWhite,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+
+            // Leading initial badge
+            // leading: Container(
+            //   width: 40.w,
+            //   height: 40.w,
+            //   alignment: Alignment.center,
+            //   decoration: BoxDecoration(
+            //     color: AppTheme.adminWhite.withOpacity(.08),
+            //     borderRadius: BorderRadius.circular(10.r),
+            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+            //   ),
+            //   child: Text(
+            //     (e.productName.isNotEmpty ? e.productName[0] : '-').toUpperCase(),
+            //     style: TextStyle(
+            //       color: AppTheme.adminWhite,
+            //       fontWeight: FontWeight.w700,
+            //       fontSize: 14.sp,
+            //     ),
+            //   ),
+            // ),
+
+            // Title: product name
+            title: Text(
+              e.productName,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppTheme.adminWhite,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
               ),
-              SizedBox(height: 6.h),
-              Row(
-                mainAxisSize: MainAxisSize.min,
+            ),
+
+            // Subtitle: agent + date
+            subtitle: Padding(
+              padding: EdgeInsets.only(top: 6.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.person_rounded, size: 14.sp, color: AppTheme.adminWhite.withOpacity(.85)),
-                  SizedBox(width: 6.w),
-                  Flexible(
-                    child: Text(
-                      e.name,
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppTheme.adminWhite.withOpacity(.85),
-                        fontSize: 12.sp,
+                  Row(
+                    children: [
+                      Icon(Icons.person_rounded,
+                          size: 14.sp, color: AppTheme.adminWhite.withOpacity(.8)),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          e.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppTheme.adminWhite.withOpacity(.85),
+                            fontSize: 12.sp,
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Date: ${_fmt(e.date)}',
+                    style: TextStyle(
+                      color: AppTheme.adminWhite.withOpacity(.7),
+                      fontSize: 11.sp,
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 4.h),
-              Text(
-                'Date: ${_fmt(e.date)}',
+            ),
+
+            // Trailing: sale amount chip
+            trailing: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: AppTheme.adminGreen.withOpacity(.28),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: AppTheme.adminGreen),
+              ),
+              child: Text(
+                e.stockSale.toStringAsFixed(2),
                 style: TextStyle(
-                  color: AppTheme.adminWhite.withOpacity(.7),
-                  fontSize: 11.sp,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12.sp,
                 ),
               ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _pill('Sale', e.stockSale, highlight: true),
-                  _pill('SN', e.sn.toDouble()),
-                ],
-              ),
-            ],
+            ),
           ),
         );
       },
     );
   }
-
-  Widget _pill(String label, double value, {bool highlight = false}) {
-    final bg = highlight ? AppTheme.adminGreen.withOpacity(.28) : AppTheme.adminGreen.withOpacity(.18);
-    final br = highlight ? AppTheme.adminGreen : AppTheme.adminGreen.withOpacity(.55);
-    final txt = highlight ? Colors.black : AppTheme.adminGreen;
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: br),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value.toStringAsFixed(value % 1 == 0 ? 0 : 2),
-            style: TextStyle(
-              color: txt,
-              fontWeight: FontWeight.w800,
-              fontSize: 12.sp,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: AppTheme.adminWhite.withOpacity(.75),
-              fontSize: 10.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
+

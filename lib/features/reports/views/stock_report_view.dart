@@ -368,7 +368,7 @@ class _StockTable extends StatelessWidget {
                     return DataRow(cells: [
                       DataCell(
                         SizedBox(
-                          width: 220.w,
+                          width: 197.w,
                           child: Text(
                             e.descriptions,
                             maxLines: 1,

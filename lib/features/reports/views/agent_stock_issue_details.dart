@@ -42,15 +42,13 @@ class _AgentIssueScaffoldState extends State<_AgentIssueScaffold> {
     if (_bootstrapped) return;
 
     final productVm = context.read<ProductViewModel>();
-    final distVm    = context.read<DistributorViewModel>();
-    final issueVm   = context.read<AgentStockIssueViewModel>();
+    final distVm = context.read<DistributorViewModel>();
+    final issueVm = context.read<AgentStockIssueViewModel>();
 
     // Wait briefly for Product & Distributor lists to load
     final deadline = DateTime.now().add(const Duration(seconds: 10));
-    while (
-    (productVm.isLoading || distVm.isLoading) &&
-        DateTime.now().isBefore(deadline)
-    ) {
+    while ((productVm.isLoading || distVm.isLoading) &&
+        DateTime.now().isBefore(deadline)) {
       await Future.delayed(const Duration(milliseconds: 120));
     }
 
@@ -70,19 +68,19 @@ class _AgentIssueScaffoldState extends State<_AgentIssueScaffold> {
     }
 
     // Use any previously-chosen IDs in VM, else default to first available
-// Prefer previously chosen IDs in VM (when non-null and non-zero), else fallback
+    // Prefer previously chosen IDs in VM (when non-null and non-zero), else fallback
     final int productId = (issueVm.productId != null && issueVm.productId != 0)
         ? issueVm.productId!
         : (productVm.selected?.productId ?? products.first.productId);
 
-    final int distributorId = (issueVm.distributorId != null && issueVm.distributorId != 0)
+    final int distributorId =
+        (issueVm.distributorId != null && issueVm.distributorId != 0)
         ? issueVm.distributorId!
         : (distVm.selected?.distributorId ?? dists.first.distributorId);
 
-
     // Dates already live in the VM (defaults handled there)
     final DateTime from = issueVm.dateFrom;
-    final DateTime to   = issueVm.dateTo;
+    final DateTime to = issueVm.dateTo;
 
     await issueVm.fetch(
       dateFrom: from,
@@ -120,7 +118,6 @@ class _AgentIssueScaffoldState extends State<_AgentIssueScaffold> {
   }
 }
 
-
 /// ---------------- Filter Dialog ----------------
 
 Future<void> _openFilterDialog(BuildContext context) async {
@@ -130,7 +127,7 @@ Future<void> _openFilterDialog(BuildContext context) async {
 
   // Seed with current values (default to today if null)
   DateTime rangeFrom = issueVm.dateFrom;
-  DateTime rangeTo   = issueVm.dateTo;
+  DateTime rangeTo = issueVm.dateTo;
 
   ProductItem? selProduct = productVm.selected;
   DistributorItem? selDistributor = distVm.selected;
@@ -174,10 +171,15 @@ Future<void> _openFilterDialog(BuildContext context) async {
 
       return AlertDialog(
         backgroundColor: AppTheme.adminGreenDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
         title: const Text(
           'Filter Agent Issue Details',
-          style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: AppTheme.adminWhite,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         content: Form(
           key: formKey,
@@ -191,16 +193,24 @@ Future<void> _openFilterDialog(BuildContext context) async {
                     if (pvm.isLoading) {
                       return Padding(
                         padding: EdgeInsets.only(bottom: 12.h),
-                        child: const LinearProgressIndicator(color: AppTheme.adminGreen),
+                        child: const LinearProgressIndicator(
+                          color: AppTheme.adminGreen,
+                        ),
                       );
                     }
                     if (pvm.error != null) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(pvm.error!, style: const TextStyle(color: Colors.redAccent)),
+                          Text(
+                            pvm.error!,
+                            style: const TextStyle(color: Colors.redAccent),
+                          ),
                           SizedBox(height: 8.h),
-                          OutlinedButton(onPressed: () => pvm.load(), child: const Text('Retry')),
+                          OutlinedButton(
+                            onPressed: () => pvm.load(),
+                            child: const Text('Retry'),
+                          ),
                         ],
                       );
                     }
@@ -211,21 +221,33 @@ Future<void> _openFilterDialog(BuildContext context) async {
                       uniq[p.productId] = p;
                     }
                     final items = uniq.values.toList()
-                      ..sort((a, b) => a.productName.toLowerCase().compareTo(b.productName.toLowerCase()));
+                      ..sort(
+                        (a, b) => a.productName.toLowerCase().compareTo(
+                          b.productName.toLowerCase(),
+                        ),
+                      );
 
                     int? selProductId = selProduct?.productId;
-                    if (selProductId == null || !uniq.containsKey(selProductId)) {
-                      selProductId = items.isNotEmpty ? items.first.productId : null;
+                    if (selProductId == null ||
+                        !uniq.containsKey(selProductId)) {
+                      selProductId = items.isNotEmpty
+                          ? items.first.productId
+                          : null;
                       if (selProductId != null) selProduct = uniq[selProductId];
                     }
 
                     return DropdownButtonFormField<int>(
                       value: selProductId,
                       items: items
-                          .map((p) => DropdownMenuItem<int>(
-                        value: p.productId,
-                        child: Text(p.productName, overflow: TextOverflow.ellipsis),
-                      ))
+                          .map(
+                            (p) => DropdownMenuItem<int>(
+                              value: p.productId,
+                              child: Text(
+                                p.productName,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
                           .toList(),
                       onChanged: (int? v) {
                         if (v == null) return;
@@ -246,16 +268,24 @@ Future<void> _openFilterDialog(BuildContext context) async {
                     if (dvm.isLoading) {
                       return Padding(
                         padding: EdgeInsets.only(bottom: 12.h),
-                        child: const LinearProgressIndicator(color: AppTheme.adminGreen),
+                        child: const LinearProgressIndicator(
+                          color: AppTheme.adminGreen,
+                        ),
                       );
                     }
                     if (dvm.error != null) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(dvm.error!, style: const TextStyle(color: Colors.redAccent)),
+                          Text(
+                            dvm.error!,
+                            style: const TextStyle(color: Colors.redAccent),
+                          ),
                           SizedBox(height: 8.h),
-                          OutlinedButton(onPressed: () => dvm.load(), child: const Text('Retry')),
+                          OutlinedButton(
+                            onPressed: () => dvm.load(),
+                            child: const Text('Retry'),
+                          ),
                         ],
                       );
                     }
@@ -266,27 +296,41 @@ Future<void> _openFilterDialog(BuildContext context) async {
                       uniq[d.distributorId] = d;
                     }
                     final items = uniq.values.toList()
-                      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+                      ..sort(
+                        (a, b) => a.name.toLowerCase().compareTo(
+                          b.name.toLowerCase(),
+                        ),
+                      );
 
                     int? selDistributorId = selDistributor?.distributorId;
-                    if (selDistributorId == null || !uniq.containsKey(selDistributorId)) {
-                      selDistributorId = items.isNotEmpty ? items.first.distributorId : null;
-                      if (selDistributorId != null) selDistributor = uniq[selDistributorId];
+                    if (selDistributorId == null ||
+                        !uniq.containsKey(selDistributorId)) {
+                      selDistributorId = items.isNotEmpty
+                          ? items.first.distributorId
+                          : null;
+                      if (selDistributorId != null)
+                        selDistributor = uniq[selDistributorId];
                     }
 
                     return DropdownButtonFormField<int>(
                       value: selDistributorId,
                       items: items
-                          .map((d) => DropdownMenuItem<int>(
-                        value: d.distributorId,
-                        child: Text(d.name, overflow: TextOverflow.ellipsis),
-                      ))
+                          .map(
+                            (d) => DropdownMenuItem<int>(
+                              value: d.distributorId,
+                              child: Text(
+                                d.name,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
                           .toList(),
                       onChanged: (int? v) {
                         if (v == null) return;
                         selDistributor = uniq[v]; // keep full model
                       },
-                      validator: (v) => v == null ? 'Select a distributor' : null,
+                      validator: (v) =>
+                          v == null ? 'Select a distributor' : null,
                       decoration: _inputDeco('Distributor'),
                       dropdownColor: AppTheme.adminGreenDark,
                       style: const TextStyle(color: AppTheme.adminWhite),
@@ -308,10 +352,15 @@ Future<void> _openFilterDialog(BuildContext context) async {
                             children: [
                               Text(
                                 _fmtDate(rangeFrom),
-                                style: const TextStyle(color: AppTheme.adminWhite),
+                                style: const TextStyle(
+                                  color: AppTheme.adminWhite,
+                                ),
                               ),
-                              Icon(Icons.calendar_today_rounded,
-                                  color: AppTheme.adminGreen, size: 13.sp),
+                              Icon(
+                                Icons.calendar_today_rounded,
+                                color: AppTheme.adminGreen,
+                                size: 13.sp,
+                              ),
                             ],
                           ),
                         ),
@@ -328,10 +377,15 @@ Future<void> _openFilterDialog(BuildContext context) async {
                             children: [
                               Text(
                                 _fmtDate(rangeTo),
-                                style: const TextStyle(color: AppTheme.adminWhite),
+                                style: const TextStyle(
+                                  color: AppTheme.adminWhite,
+                                ),
                               ),
-                              Icon(Icons.calendar_today_rounded,
-                                  color: AppTheme.adminGreen, size: 13.sp),
+                              Icon(
+                                Icons.calendar_today_rounded,
+                                color: AppTheme.adminGreen,
+                                size: 13.sp,
+                              ),
                             ],
                           ),
                         ),
@@ -346,13 +400,18 @@ Future<void> _openFilterDialog(BuildContext context) async {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('CANCEL', style: TextStyle(color: AppTheme.adminWhite)),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(color: AppTheme.adminWhite),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.adminGreen,
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
             ),
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
@@ -431,13 +490,22 @@ class _IssueContentState extends State<_IssueContent> {
   @override
   Widget build(BuildContext context) {
     if (widget.isLoading) {
-      return const Center(child: CircularProgressIndicator(color: AppTheme.adminGreen));
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.adminGreen),
+      );
     }
     if (widget.error != null) {
-      return Center(child: Text(widget.error!, style: const TextStyle(color: Colors.redAccent)));
+      return Center(
+        child: Text(
+          widget.error!,
+          style: const TextStyle(color: Colors.redAccent),
+        ),
+      );
     }
     if (widget.items.isEmpty) {
-      return const Center(child: Text('No data', style: TextStyle(color: AppTheme.adminWhite)));
+      return const Center(
+        child: Text('No data', style: TextStyle(color: AppTheme.adminWhite)),
+      );
     }
 
     return Column(
@@ -456,7 +524,10 @@ class _IssueContentState extends State<_IssueContent> {
                   children: [
                     Text(
                       'From: ${_fmtDate(widget.dateFrom)}  To: ${_fmtDate(widget.dateTo)}',
-                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
+                      style: TextStyle(
+                        color: AppTheme.adminWhite.withOpacity(.85),
+                        fontSize: 12.sp,
+                      ),
                     ),
                     // Text('Rows: ${widget.items.length}',
                     //     style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp)),
@@ -471,7 +542,9 @@ class _IssueContentState extends State<_IssueContent> {
                 decoration: BoxDecoration(
                   color: AppTheme.adminWhite.withOpacity(.06),
                   borderRadius: BorderRadius.circular(10.r),
-                  border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+                  border: Border.all(
+                    color: AppTheme.adminWhite.withOpacity(.12),
+                  ),
                 ),
                 padding: EdgeInsets.all(2.w),
                 child: Row(
@@ -536,7 +609,11 @@ class _ViewChip extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 14.sp, color: selected ? Colors.black : AppTheme.adminWhite),
+            Icon(
+              icon,
+              size: 14.sp,
+              color: selected ? Colors.black : AppTheme.adminWhite,
+            ),
             SizedBox(width: 6.w),
             Text(
               label,
@@ -557,6 +634,7 @@ class _ViewChip extends StatelessWidget {
 
 class _IssueTableView extends StatelessWidget {
   final List<AgentStockIssueItem> items;
+
   const _IssueTableView({required this.items});
 
   @override
@@ -573,7 +651,9 @@ class _IssueTableView extends StatelessWidget {
             headingRowHeight: 36.h,
             dataRowMinHeight: 36.h,
             dataRowMaxHeight: 40.h,
-            headingRowColor: WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
+            headingRowColor: WidgetStateProperty.all(
+              AppTheme.adminWhite.withOpacity(.08),
+            ),
             headingTextStyle: TextStyle(
               color: AppTheme.adminWhite,
               fontWeight: FontWeight.w700,
@@ -584,7 +664,6 @@ class _IssueTableView extends StatelessWidget {
               fontSize: 12.sp,
             ),
             columns: const [
-              DataColumn(label: Text('SN')),
               DataColumn(label: Text('DATE')),
               DataColumn(label: Text('PRODUCT')),
               DataColumn(label: Text('DISTRIBUTOR')),
@@ -592,23 +671,36 @@ class _IssueTableView extends StatelessWidget {
               DataColumn(label: Text('COUNT')),
             ],
             rows: items.map((e) {
-              return DataRow(cells: [
-                DataCell(Text('${e.sn}')),
-                DataCell(Text(e.issueDate)), // dd/MM/yyyy from API
-                DataCell(SizedBox(
-                  width: 180.w,
-                  child: Text(e.productName, overflow: TextOverflow.ellipsis),
-                )),
-                DataCell(SizedBox(
-                  width: 180.w,
-                  child: Text(e.name, overflow: TextOverflow.ellipsis),
-                )),
-                DataCell(SizedBox(
-                  width: 140.w,
-                  child: Text(e.distributorCode, overflow: TextOverflow.ellipsis),
-                )),
-                DataCell(Text(e.issueCount.toStringAsFixed(2))),
-              ]);
+              return DataRow(
+                cells: [
+                  DataCell(Text(e.issueDate)), // dd/MM/yyyy from API
+                  DataCell(
+                    SizedBox(
+                      width: 140.w,
+                      child: Text(
+                        e.productName,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    SizedBox(
+                      width: 130.w,
+                      child: Text(e.name, overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+                  DataCell(
+                    SizedBox(
+                      width: 100.w,
+                      child: Text(
+                        e.distributorCode,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  DataCell(Text(e.issueCount.toStringAsFixed(2))),
+                ],
+              );
             }).toList(),
           ),
         ),
@@ -616,6 +708,7 @@ class _IssueTableView extends StatelessWidget {
     );
   }
 }
+
 
 /// ---------------- Tile view ----------------
 
@@ -625,128 +718,141 @@ class _IssueTileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Responsive grid — 2 columns on small, 3+ on larger screens
-    final crossAxisCount = MediaQuery.of(context).size.width ~/ 260.0;
-    final columns = crossAxisCount.clamp(1, 4);
-
-    return GridView.builder(
+    return ListView.separated(
       padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        childAspectRatio: 1.8, // wider cards
-      ),
       itemCount: items.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (_, i) {
         final e = items[i];
+
         return Container(
           decoration: BoxDecoration(
             color: AppTheme.adminWhite.withOpacity(.06),
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
           ),
-          padding: EdgeInsets.all(12.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top row: date + count chip
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      e.issueDate,
-                      style: TextStyle(
-                        color: AppTheme.adminWhite.withOpacity(.9),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            // Leading: product initial (optional badge)
+            // leading: Container(
+            //   width: 38.w,
+            //   height: 38.w,
+            //   alignment: Alignment.center,
+            //   decoration: BoxDecoration(
+            //     color: AppTheme.adminWhite.withOpacity(.08),
+            //     borderRadius: BorderRadius.circular(10.r),
+            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+            //   ),
+            //   child: Text(
+            //     (e.productName.isNotEmpty ? e.productName[0] : '-').toUpperCase(),
+            //     style: TextStyle(
+            //       color: AppTheme.adminWhite,
+            //       fontWeight: FontWeight.w700,
+            //       fontSize: 13.sp,
+            //     ),
+            //   ),
+            // ),
+
+            // Title row: Date (left) + Count chip (right)
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    e.issueDate, // dd/MM/yyyy from API
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppTheme.adminWhite.withOpacity(.9),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12.sp,
                     ),
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: AppTheme.adminGreen.withOpacity(.22),
-                      borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(color: AppTheme.adminGreen.withOpacity(.5)),
-                    ),
-                    child: Text(
-                      e.issueCount.toStringAsFixed(2),
-                      style: TextStyle(
-                        color: AppTheme.adminGreen,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8.h),
-              // Product
-              Text(
-                e.productName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.adminWhite,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
                 ),
-              ),
-              SizedBox(height: 6.h),
-              // Distributor name
-              Row(
-                children: [
-                  Icon(Icons.store_mall_directory_rounded,
-                      size: 14.sp, color: AppTheme.adminWhite.withOpacity(.8)),
-                  SizedBox(width: 6.w),
-                  Expanded(
-                    child: Text(
-                      e.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppTheme.adminWhite.withOpacity(.85),
-                        fontSize: 12.sp,
-                      ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: AppTheme.adminGreen.withOpacity(.22),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: AppTheme.adminGreen.withOpacity(.5)),
+                  ),
+                  child: Text(
+                    e.issueCount.toStringAsFixed(2),
+                    style: TextStyle(
+                      color: AppTheme.adminGreen,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11.sp,
                     ),
                   ),
-                ],
-              ),
-              SizedBox(height: 4.h),
-              // Code
-              Row(
-                children: [
-                  Icon(Icons.badge_rounded,
-                      size: 14.sp, color: AppTheme.adminWhite.withOpacity(.8)),
-                  SizedBox(width: 6.w),
-                  Expanded(
-                    child: Text(
-                      e.distributorCode,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppTheme.adminWhite.withOpacity(.75),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              // SN footer
-              Text(
-                'SN: ${e.sn}',
-                style: TextStyle(
-                  color: AppTheme.adminWhite.withOpacity(.6),
-                  fontSize: 11.sp,
                 ),
+              ],
+            ),
+
+            // Subtitle: Product (bold), Distributor (with icon), Code (with icon)
+            subtitle: Padding(
+              padding: EdgeInsets.only(top: 6.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Product
+                  Text(
+                    e.productName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppTheme.adminWhite,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+
+                  // Distributor
+                  Row(
+                    children: [
+                      Icon(Icons.store_mall_directory_rounded,
+                          size: 14.sp, color: AppTheme.adminWhite.withOpacity(.8)),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          e.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppTheme.adminWhite.withOpacity(.85),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+
+                  // Code
+                  Row(
+                    children: [
+                      Icon(Icons.badge_rounded,
+                          size: 14.sp, color: AppTheme.adminWhite.withOpacity(.8)),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          e.distributorCode,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppTheme.adminWhite.withOpacity(.75),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },
     );
   }
 }
+

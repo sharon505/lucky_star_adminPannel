@@ -520,7 +520,6 @@ class _StockTableView extends StatelessWidget {
               fontSize: 12.sp,
             ),
             columns: const [
-              DataColumn(label: Text('SN')),
               DataColumn(label: Text('PRODUCT')),
               DataColumn(label: Text('AGENT')),
               DataColumn(label: Text('ISSUED')),
@@ -529,13 +528,12 @@ class _StockTableView extends StatelessWidget {
             ],
             rows: items.map((e) {
               return DataRow(cells: [
-                DataCell(Text('${e.sn}')),
                 DataCell(SizedBox(
-                  width: 200.w,
+                  width: 130.w,
                   child: Text(e.productName, overflow: TextOverflow.ellipsis),
                 )),
                 DataCell(SizedBox(
-                  width: 180.w,
+                  width: 130.w,
                   child: Text(e.name, overflow: TextOverflow.ellipsis),
                 )),
                 DataCell(Text(e.issued.toStringAsFixed(2))),
@@ -550,6 +548,7 @@ class _StockTableView extends StatelessWidget {
   }
 }
 
+
 /// ---------------- Tile view ----------------
 
 class _StockTileView extends StatelessWidget {
@@ -558,112 +557,118 @@ class _StockTileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final crossAxisCount = (MediaQuery.of(context).size.width / 260).floor().clamp(1, 4);
-    return GridView.builder(
+    return ListView.separated(
       padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        childAspectRatio: 1.75,
-      ),
       itemCount: items.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (_, i) {
         final e = items[i];
+
         return Container(
           decoration: BoxDecoration(
             color: AppTheme.adminWhite.withOpacity(.06),
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
           ),
-          padding: EdgeInsets.all(12.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Product
-              Text(
-                e.productName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.adminWhite,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+
+            // Leading initial
+            // leading: Container(
+            //   width: 40.w,
+            //   height: 40.w,
+            //   alignment: Alignment.center,
+            //   decoration: BoxDecoration(
+            //     color: AppTheme.adminWhite.withOpacity(.08),
+            //     borderRadius: BorderRadius.circular(10.r),
+            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+            //   ),
+            //   child: Text(
+            //     (e.productName.isNotEmpty ? e.productName[0] : '-').toUpperCase(),
+            //     style: TextStyle(
+            //       color: AppTheme.adminWhite,
+            //       fontWeight: FontWeight.w700,
+            //       fontSize: 14.sp,
+            //     ),
+            //   ),
+            // ),
+
+            // Product
+            title: Text(
+              e.productName,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppTheme.adminWhite,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
               ),
-              SizedBox(height: 6.h),
-              // Agent
-              Row(
+            ),
+
+            // Agent + Numbers
+            subtitle: Padding(
+              padding: EdgeInsets.only(top: 6.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.person_rounded,
-                      size: 14.sp, color: AppTheme.adminWhite.withOpacity(.8)),
-                  SizedBox(width: 6.w),
-                  Expanded(
-                    child: Text(
-                      e.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppTheme.adminWhite.withOpacity(.85),
-                        fontSize: 12.sp,
+                  // Agent
+                  Row(
+                    children: [
+                      Icon(Icons.person_rounded,
+                          size: 14.sp, color: AppTheme.adminWhite.withOpacity(.8)),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          e.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppTheme.adminWhite.withOpacity(.85),
+                            fontSize: 12.sp,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
+                  SizedBox(height: 6.h),
+
+                  // Normal text values
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Issued: ${e.issued.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          color: AppTheme.adminGreen,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                      Text(
+                        'Sale: ${e.sale.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          color: AppTheme.adminWhite.withOpacity(.9),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                      Text(
+                        'Bal: ${e.balanceStock.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          color: AppTheme.adminWhite.withOpacity(.9),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const Spacer(),
-              // Numbers row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _pill('Issued', e.issued),
-                  _pill('Sale', e.sale),
-                  _pill('Bal', e.balanceStock),
-                ],
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                'SN: ${e.sn}',
-                style: TextStyle(
-                  color: AppTheme.adminWhite.withOpacity(.6),
-                  fontSize: 11.sp,
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },
     );
   }
-
-  Widget _pill(String label, double value) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: AppTheme.adminGreen.withOpacity(.22),
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: AppTheme.adminGreen.withOpacity(.5)),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value.toStringAsFixed(0),
-            style: TextStyle(
-              color: AppTheme.adminGreen,
-              fontWeight: FontWeight.w800,
-              fontSize: 12.sp,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: AppTheme.adminWhite.withOpacity(.75),
-              fontSize: 10.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
+

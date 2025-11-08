@@ -539,6 +539,7 @@ class _ViewChip extends StatelessWidget {
 }
 
 /// ---------------- Table view ----------------
+/// ---------------- Table view ----------------
 class _CashCollectionTable extends StatelessWidget {
   final List<CashReceivedItem> items;
   const _CashCollectionTable({required this.items});
@@ -553,7 +554,7 @@ class _CashCollectionTable extends StatelessWidget {
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 980.w),
+        constraints: BoxConstraints(maxWidth: 880.w),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
@@ -562,7 +563,8 @@ class _CashCollectionTable extends StatelessWidget {
             headingRowHeight: 36.h,
             dataRowMinHeight: 36.h,
             dataRowMaxHeight: 40.h,
-            headingRowColor: WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
+            headingRowColor:
+            WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
             headingTextStyle: TextStyle(
               color: AppTheme.adminWhite,
               fontWeight: FontWeight.w700,
@@ -573,19 +575,23 @@ class _CashCollectionTable extends StatelessWidget {
               fontSize: 12.sp,
             ),
             columns: const [
-              DataColumn(label: Text('SN')),
               DataColumn(label: Text('DATE')),
               DataColumn(label: Text('PRODUCT')),
               DataColumn(label: Text('AGENT')),
-              DataColumn(label: Text('RECEIVED_AMT')),
+              DataColumn(label: Text('RECEIVED AMT')),
             ],
             rows: items.map((e) {
               return DataRow(
                 cells: [
-                  DataCell(Text('${e.sn}')),
                   DataCell(Text(_fmt(e.date))),
-                  DataCell(SizedBox(width: 220.w, child: Text(e.productName, overflow: TextOverflow.ellipsis))),
-                  DataCell(SizedBox(width: 200.w, child: Text(e.name, overflow: TextOverflow.ellipsis))),
+                  DataCell(SizedBox(
+                      width: 150.w,
+                      child: Text(e.productName,
+                          overflow: TextOverflow.ellipsis))),
+                  DataCell(SizedBox(
+                      width: 150.w,
+                      child:
+                      Text(e.name, overflow: TextOverflow.ellipsis))),
                   DataCell(Text(e.receivedAmt.toStringAsFixed(2))),
                 ],
               );
@@ -597,7 +603,7 @@ class _CashCollectionTable extends StatelessWidget {
   }
 }
 
-/// ---------------- Tile view ----------------
+/// ---------------- Tile (ListTile) view ----------------
 class _CashCollectionTiles extends StatelessWidget {
   final List<CashReceivedItem> items;
   const _CashCollectionTiles({required this.items});
@@ -609,19 +615,10 @@ class _CashCollectionTiles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
-    const minTileW = 260.0;
-    final crossAxisCount = (screenW / minTileW).floor().clamp(1, 4);
-
-    return GridView.builder(
+    return ListView.separated(
       padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        childAspectRatio: 1.75,
-      ),
       itemCount: items.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (_, i) {
         final e = items[i];
         return Container(
@@ -630,95 +627,105 @@ class _CashCollectionTiles extends StatelessWidget {
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
           ),
-          padding: EdgeInsets.all(12.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                e.productName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.adminWhite,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+
+            // Leading monogram
+            // leading: Container(
+            //   width: 40.w,
+            //   height: 40.w,
+            //   alignment: Alignment.center,
+            //   decoration: BoxDecoration(
+            //     color: AppTheme.adminWhite.withOpacity(.08),
+            //     borderRadius: BorderRadius.circular(10.r),
+            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+            //   ),
+            //   child: Text(
+            //     (e.productName.isNotEmpty ? e.productName[0] : '-').toUpperCase(),
+            //     style: TextStyle(
+            //       color: AppTheme.adminWhite,
+            //       fontWeight: FontWeight.w700,
+            //       fontSize: 14.sp,
+            //     ),
+            //   ),
+            // ),
+
+            // Product name
+            title: Text(
+              e.productName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppTheme.adminWhite,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
               ),
-              SizedBox(height: 6.h),
-              Row(
-                mainAxisSize: MainAxisSize.min,
+            ),
+
+            // Column-style details
+            subtitle: Padding(
+              padding: EdgeInsets.only(top: 6.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.person_rounded, size: 14.sp, color: AppTheme.adminWhite.withOpacity(.85)),
-                  SizedBox(width: 6.w),
-                  Flexible(
-                    child: Text(
-                      e.name,
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppTheme.adminWhite.withOpacity(.85),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ),
+                  _kvRow('Agent', e.name),
+                  SizedBox(height: 4.h),
+                  _kvRow('Date', _fmt(e.date)),
                 ],
               ),
-              SizedBox(height: 4.h),
-              Text(
-                'Date: ${_fmt(e.date)}',
-                style: TextStyle(
-                  color: AppTheme.adminWhite.withOpacity(.7),
-                  fontSize: 11.sp,
+            ),
+
+            // Highlighted amount
+            trailing: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: AppTheme.adminGreen.withOpacity(.28),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: AppTheme.adminGreen),
+              ),
+              child: Text(
+                e.receivedAmt.toStringAsFixed(2),
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _pill('Received', e.receivedAmt, highlight: true),
-                  _pill('SN', e.sn.toDouble()),
-                ],
-              ),
-            ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _pill(String label, double value, {bool highlight = false}) {
-    final bg  = highlight ? AppTheme.adminGreen.withOpacity(.28) : AppTheme.adminGreen.withOpacity(.18);
-    final br  = highlight ? AppTheme.adminGreen : AppTheme.adminGreen.withOpacity(.55);
-    final txt = highlight ? Colors.black : AppTheme.adminGreen;
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: br),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value.toStringAsFixed(value % 1 == 0 ? 0 : 2),
+  // key : value row with right-aligned value for a “column” feel
+  Widget _kvRow(String key, String value) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            key,
             style: TextStyle(
-              color: txt,
-              fontWeight: FontWeight.w800,
+              color: AppTheme.adminWhite.withOpacity(.78),
               fontSize: 12.sp,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: AppTheme.adminWhite.withOpacity(.75),
-              fontSize: 10.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
-        ],
-      ),
+        ),
+        Flexible(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              color: AppTheme.adminWhite.withOpacity(.95),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
+
