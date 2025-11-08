@@ -453,9 +453,119 @@ class _PandLTableState extends State<_PandLTable> {
     super.dispose();
   }
 
+  // ---------- helpers ----------
+  ProfitLossRow? _find(String key) {
+    final i = widget.items.indexWhere(
+          (e) => e.description.toLowerCase().contains(key.toLowerCase()),
+    );
+    return i == -1 ? null : widget.items[i];
+  }
+
+  DataRow _bandRow({
+    required String title,
+    Color? bg,
+    Color? fg,
+    FontWeight weight = FontWeight.w900,
+  }) {
+    return DataRow(
+      color: bg != null ? WidgetStatePropertyAll(bg) : null,
+      cells: [
+        DataCell(Text(
+          title,
+          style: TextStyle(color: fg ?? AppTheme.adminWhite, fontWeight: weight),
+        )),
+        const DataCell(Text('')),
+      ],
+    );
+  }
+
+  DataRow _amountRow(String label, double amount) {
+    return DataRow(cells: [
+      DataCell(SizedBox(
+        width: 255.w,
+        child: Text(label, overflow: TextOverflow.ellipsis),
+      )),
+      DataCell(Text(amount.toStringAsFixed(2))),
+    ]);
+  }
+
+  DataRow _netProfitRow(ProfitLossRow r) {
+    return DataRow(cells: [
+      DataCell(Text(
+        r.description,
+        style: const TextStyle(fontWeight: FontWeight.w900),
+      )),
+      const DataCell(SizedBox(width: 6)),
+    ]); // amount in the next row for bold separation if desired
+  }
+
+  DataRow _netProfitAmountRow(ProfitLossRow r) {
+    return DataRow(cells: [
+      const DataCell(Text('')),
+      DataCell(Text(
+        r.amount.toStringAsFixed(2),
+        style: const TextStyle(fontWeight: FontWeight.w900),
+      )),
+    ]);
+  }
+
+  DataRow _blankRow() => const DataRow(cells: [
+    DataCell(Text('')),
+    DataCell(Text('')),
+  ]);
+
   @override
   Widget build(BuildContext context) {
-    final items = widget.items;
+    // pick rows by fuzzy keys
+    final income              = _find('income');                   // INCOME (detail line)
+    final agentReceivable     = _find('agent rece');               // AGENT RECEIVABLE
+    final agentCollection     = _find('agent coll');               // AGENT COLLECTION
+    final totalIncome         = _find('total inco');               // TOTAL INCOME
+    final prizePayout         = _find('prize amount payout');      // PRIZE AMOUNT PAYOUT
+    final incentivePayable    = _find('incentive payable');        // INCENTIVE PAYABLE
+    final incentivePaid       = _find('incentive paid');           // INCENTIVE PAID
+    final totalExpenses       = _find('total expe');               // TOTAL EXPENSES
+    final netProfit           = _find('net prof');                 // NET PROFIT
+
+    // colors to match your screenshot vibe
+    final incomeBandBg   = AppTheme.adminWhite.withOpacity(.06);   // subtle band
+    final blueBandBg     = const Color(0xFF3DA5FF).withOpacity(.18);
+    final blueBandFg     = const Color(0xFF3DA5FF);
+    final pinkBandBg     = const Color(0xFFFF5E8A).withOpacity(.18);
+    final pinkBandFg     = const Color(0xFFFF5E8A);
+    final incomeBlueBg        = const Color(0xFF3DA5FF).withOpacity(.18);
+    final incomeBlueFg        = const Color(0xFF3DA5FF);
+
+    final totalIncomeGreenBg  = AppTheme.adminGreen.withOpacity(.18);
+    final totalIncomeGreenFg  = AppTheme.adminGreen;
+
+    final orderedRows = <DataRow>[
+      // INCOME (blue band)
+      _bandRow(title: 'INCOME', bg: incomeBlueBg, fg: incomeBlueFg),
+      if (agentReceivable != null)  _amountRow(agentReceivable.description, agentReceivable.amount),
+      if (agentCollection != null)  _amountRow(agentCollection.description, agentCollection.amount),
+
+      // TOTAL INCOME (green band)
+      _bandRow(title: 'TOTAL INCOME', bg: totalIncomeGreenBg, fg: totalIncomeGreenFg),
+      if (totalIncome != null)      _amountRow(totalIncome.description, totalIncome.amount),
+
+      // Expense lines
+      if (prizePayout != null)      _amountRow(prizePayout.description, prizePayout.amount),
+      if (incentivePayable != null) _amountRow(incentivePayable.description, incentivePayable.amount),
+      if (incentivePaid != null)    _amountRow(incentivePaid.description, incentivePaid.amount),
+
+      // TOTAL EXPENSES (keep pink/red as before)
+      _bandRow(title: 'TOTAL EXPENSES', bg: pinkBandBg, fg: pinkBandFg),
+      if (totalExpenses != null)    _amountRow(totalExpenses.description, totalExpenses.amount),
+
+      // NET PROFIT (no band per your screenshot)
+      if (netProfit != null)        _amountRow(netProfit.description, netProfit.amount),
+
+      _blankRow(),
+    ];
+
+
+
 
     return Align(
       alignment: Alignment.topLeft,
@@ -494,19 +604,7 @@ class _PandLTableState extends State<_PandLTable> {
                     DataColumn(label: Text('DESCRIPTION')),
                     DataColumn(label: Text('AMOUNT')),
                   ],
-                  rows: items.map((e) {
-                    return DataRow(
-                      cells: [
-                        DataCell(
-                          SizedBox(
-                            width: 255.w,
-                            child: Text(e.description, overflow: TextOverflow.ellipsis),
-                          ),
-                        ),
-                        DataCell(Text(e.amount.toStringAsFixed(2))),
-                      ],
-                    );
-                  }).toList(),
+                  rows: orderedRows,
                 ),
               ),
             ),
@@ -516,6 +614,9 @@ class _PandLTableState extends State<_PandLTable> {
     );
   }
 }
+
+
+
 
 class _PandLTiles extends StatelessWidget {
   final List<ProfitLossRow> items;

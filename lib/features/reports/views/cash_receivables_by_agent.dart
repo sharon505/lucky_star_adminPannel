@@ -500,6 +500,16 @@ class _ReceivablesTableViewState extends State<_ReceivablesTableView> {
     super.dispose();
   }
 
+  DataRow _blankRow() => const DataRow(cells: [
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+  ]);
+
   @override
   Widget build(BuildContext context) {
     final items = widget.items;
@@ -546,9 +556,9 @@ class _ReceivablesTableViewState extends State<_ReceivablesTableView> {
                     DataColumn(label: Text('PAYOUT')),
                     DataColumn(label: Text('BAL. RECEIVE')),
                   ],
-                  rows: items.map((e) {
-                    return DataRow(
-                      cells: [
+                  rows: [
+                    ...items.map((e) {
+                      return DataRow(cells: [
                         DataCell(Text('${e.sn}')),
                         DataCell(SizedBox(
                           width: 120.w,
@@ -559,9 +569,10 @@ class _ReceivablesTableViewState extends State<_ReceivablesTableView> {
                         DataCell(Text(_int(e.receivable))),
                         DataCell(Text(_int(e.payout))),
                         DataCell(Text(_int(e.balanceReceive))),
-                      ],
-                    );
-                  }).toList(),
+                      ]);
+                    }),
+                    _blankRow(), // ← blank row at the end
+                  ],
                 ),
               ),
             ),
@@ -571,6 +582,7 @@ class _ReceivablesTableViewState extends State<_ReceivablesTableView> {
     );
   }
 }
+
 
 
 /// =================================================================

@@ -480,6 +480,16 @@ class _TrackerTableState extends State<_TrackerTable> {
     super.dispose();
   }
 
+  DataRow _blankRow() => const DataRow(cells: [
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+  ]);
+
   @override
   Widget build(BuildContext context) {
     final items = widget.items;
@@ -526,8 +536,8 @@ class _TrackerTableState extends State<_TrackerTable> {
                     DataColumn(label: Text('DEBIT')),
                     DataColumn(label: Text('CREDIT')),
                   ],
-                  rows: items.map((e) {
-                    return DataRow(
+                  rows: [
+                    ...items.map((e) => DataRow(
                       cells: [
                         DataCell(Text(_fmt(e.tranDate))),
                         DataCell(SizedBox(
@@ -546,8 +556,9 @@ class _TrackerTableState extends State<_TrackerTable> {
                         DataCell(Text(e.debit.toStringAsFixed(2))),
                         DataCell(Text(e.credit.toStringAsFixed(2))),
                       ],
-                    );
-                  }).toList(),
+                    )),
+                    _blankRow(), // ← spacer row at end
+                  ],
                 ),
               ),
             ),
@@ -557,6 +568,7 @@ class _TrackerTableState extends State<_TrackerTable> {
     );
   }
 }
+
 
 
 /// ---------------- Tile view ----------------

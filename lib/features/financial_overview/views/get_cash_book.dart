@@ -414,6 +414,13 @@ class _CashBookTableState extends State<_CashBookTable> {
     super.dispose();
   }
 
+  DataRow _blankRow() => const DataRow(cells: [
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+  ]);
+
   @override
   Widget build(BuildContext context) {
     final items = widget.items;
@@ -498,6 +505,7 @@ class _CashBookTableState extends State<_CashBookTable> {
                         ),
                       ],
                     ),
+                    _blankRow(), // ← spacer row at the very end
                   ],
                 ),
               ),
@@ -508,6 +516,7 @@ class _CashBookTableState extends State<_CashBookTable> {
     );
   }
 }
+
 
 
 /// ---------------- Tile view ----------------

@@ -565,6 +565,13 @@ class _CashCollectionTableState extends State<_CashCollectionTable> {
     super.dispose();
   }
 
+  DataRow _blankRow() => const DataRow(cells: [
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+  ]);
+
   @override
   Widget build(BuildContext context) {
     final items = widget.items;
@@ -608,27 +615,25 @@ class _CashCollectionTableState extends State<_CashCollectionTable> {
                     DataColumn(label: Text('AGENT')),
                     DataColumn(label: Text('RECEIVED AMT')),
                   ],
-                  rows: items.map((e) {
-                    return DataRow(
-                      cells: [
-                        DataCell(Text(_fmt(e.date))),
-                        DataCell(
-                          SizedBox(
-                            width: 150.w,
-                            child: Text(e.productName, overflow: TextOverflow.ellipsis),
-                          ),
+                  rows: [
+                    ...items.map((e) => DataRow(cells: [
+                      DataCell(Text(_fmt(e.date))),
+                      DataCell(
+                        SizedBox(
+                          width: 150.w,
+                          child: Text(e.productName, overflow: TextOverflow.ellipsis),
                         ),
-                        DataCell(
-                          SizedBox(
-                            width: 150.w,
-                            child: Text(e.name, overflow: TextOverflow.ellipsis),
-                          ),
+                      ),
+                      DataCell(
+                        SizedBox(
+                          width: 150.w,
+                          child: Text(e.name, overflow: TextOverflow.ellipsis),
                         ),
-                        // Integers only
-                        DataCell(Text(_int(e.receivedAmt))),
-                      ],
-                    );
-                  }).toList(),
+                      ),
+                      DataCell(Text(_int(e.receivedAmt))),
+                    ])),
+                    _blankRow(), // ← extra blank row at the end
+                  ],
                 ),
               ),
             ),
@@ -638,6 +643,7 @@ class _CashCollectionTableState extends State<_CashCollectionTable> {
     );
   }
 }
+
 
 
 /// ---------------- Tile (ListTile) view ----------------

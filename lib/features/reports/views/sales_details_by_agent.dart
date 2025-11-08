@@ -542,7 +542,6 @@ class _ViewChip extends StatelessWidget {
 }
 
 /// ---------------- Table view ----------------
-/// ---------------- Table view ----------------
 class _SalesTableView extends StatefulWidget {
   final List<StockSaleItem> items;
   const _SalesTableView({required this.items});
@@ -567,6 +566,17 @@ class _SalesTableViewState extends State<_SalesTableView> {
     return '${two(d.day)}/${two(d.month)}/${d.year}';
   }
 
+  // Blank spacer row to appear at the end
+  DataRow _blankRow() => const DataRow(
+    // keep row color transparent
+    cells: [
+      DataCell(Text('')),
+      DataCell(Text('')),
+      DataCell(Text('')),
+      DataCell(Text('')),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final items = widget.items;
@@ -578,54 +588,58 @@ class _SalesTableViewState extends State<_SalesTableView> {
         child: Scrollbar(
           controller: _vCtrl,
           thumbVisibility: true,
-          child: SingleChildScrollView(
-            controller: _vCtrl, // vertical scroll
-            child: Scrollbar(
-              controller: _hCtrl,
-              thumbVisibility: true,
-              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
-              child: SingleChildScrollView(
-                controller: _hCtrl, // horizontal scroll
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columnSpacing: 14.w,
-                  horizontalMargin: 12.w,
-                  headingRowHeight: 36.h,
-                  dataRowMinHeight: 36.h,
-                  dataRowMaxHeight: 40.h,
-                  headingRowColor:
-                  WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
-                  headingTextStyle: TextStyle(
-                    color: AppTheme.adminWhite,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12.sp,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 60.h), // keep extra bottom space
+            child: SingleChildScrollView(
+              controller: _vCtrl, // vertical scroll
+              child: Scrollbar(
+                controller: _hCtrl,
+                thumbVisibility: true,
+                notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
+                child: SingleChildScrollView(
+                  controller: _hCtrl, // horizontal scroll
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columnSpacing: 14.w,
+                    horizontalMargin: 12.w,
+                    headingRowHeight: 36.h,
+                    dataRowMinHeight: 36.h,
+                    dataRowMaxHeight: 40.h,
+                    headingRowColor:
+                    WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
+                    headingTextStyle: TextStyle(
+                      color: AppTheme.adminWhite,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12.sp,
+                    ),
+                    dataTextStyle: TextStyle(
+                      color: AppTheme.adminWhite,
+                      fontSize: 12.sp,
+                    ),
+                    columns: const [
+                      DataColumn(label: Text('DATE')),
+                      DataColumn(label: Text('PRODUCT')),
+                      DataColumn(label: Text('AGENT')),
+                      DataColumn(label: Text('STOCK_SALE')),
+                    ],
+                    rows: [
+                      ...items.map((e) => DataRow(
+                        cells: [
+                          DataCell(Text(_fmt(e.date))),
+                          DataCell(SizedBox(
+                            width: 140.w,
+                            child: Text(e.productName, overflow: TextOverflow.ellipsis),
+                          )),
+                          DataCell(SizedBox(
+                            width: 110.w,
+                            child: Text(e.name, overflow: TextOverflow.ellipsis),
+                          )),
+                          DataCell(Text(e.stockSale.toStringAsFixed(2))),
+                        ],
+                      )),
+                      _blankRow(), // ← extra blank row at the end
+                    ],
                   ),
-                  dataTextStyle: TextStyle(
-                    color: AppTheme.adminWhite,
-                    fontSize: 12.sp,
-                  ),
-                  columns: const [
-                    DataColumn(label: Text('DATE')),
-                    DataColumn(label: Text('PRODUCT')),
-                    DataColumn(label: Text('AGENT')),
-                    DataColumn(label: Text('STOCK_SALE')),
-                  ],
-                  rows: items.map((e) {
-                    return DataRow(
-                      cells: [
-                        DataCell(Text(_fmt(e.date))),
-                        DataCell(SizedBox(
-                          width: 140.w,
-                          child: Text(e.productName, overflow: TextOverflow.ellipsis),
-                        )),
-                        DataCell(SizedBox(
-                          width: 110.w,
-                          child: Text(e.name, overflow: TextOverflow.ellipsis),
-                        )),
-                        DataCell(Text(e.stockSale.toStringAsFixed(2))),
-                      ],
-                    );
-                  }).toList(),
                 ),
               ),
             ),
@@ -635,6 +649,7 @@ class _SalesTableViewState extends State<_SalesTableView> {
     );
   }
 }
+
 
 
 
