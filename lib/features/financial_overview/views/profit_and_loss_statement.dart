@@ -302,6 +302,7 @@ class _PandLContentState extends State<_PandLContent> {
         Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Wrap(
@@ -485,70 +486,87 @@ class _PandLTable extends StatelessWidget {
   }
 }
 
-/// ---------------- Tile view ----------------
 class _PandLTiles extends StatelessWidget {
   final List<ProfitLossRow> items;
   const _PandLTiles({required this.items});
 
   @override
   Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
-    const minTileW = 260.0;
-    final crossAxisCount = (screenW / minTileW).floor().clamp(1, 4);
-
-    return GridView.builder(
+    return ListView.separated(
       padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        childAspectRatio: 2.0,
-      ),
       itemCount: items.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (_, i) {
         final e = items[i];
         final isTotal = _isTotal(e.description);
+
+        final bgColor = isTotal
+            ? AppTheme.adminGreen.withOpacity(.25)
+            : AppTheme.adminWhite.withOpacity(.06);
+
+        final titleStyle = TextStyle(
+          color: AppTheme.adminWhite,
+          fontSize: 13.sp,
+          fontWeight: FontWeight.w700,
+        );
+
+        final amountStyle = TextStyle(
+          color: isTotal ? Colors.black : AppTheme.adminWhite,
+          fontWeight: FontWeight.w800,
+          fontSize: 14.sp,
+        );
+
         return Container(
           decoration: BoxDecoration(
-            color: isTotal
-                ? AppTheme.adminGreen.withOpacity(.25)
-                : AppTheme.adminWhite.withOpacity(.06),
+            color: bgColor,
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
           ),
-          padding: EdgeInsets.all(12.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                e.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.adminWhite,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                e.amount.toStringAsFixed(2),
-                style: TextStyle(
-                  color: isTotal ? Colors.black : AppTheme.adminWhite,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14.sp,
-                ),
-              ),
-              const Spacer(),
-            ],
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            // monogram
+            // leading: Container(
+            //   width: 40.w,
+            //   height: 40.w,
+            //   alignment: Alignment.center,
+            //   decoration: BoxDecoration(
+            //     color: AppTheme.adminWhite.withOpacity(.08),
+            //     borderRadius: BorderRadius.circular(10.r),
+            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+            //   ),
+            //   child: Text(
+            //     (e.description.isNotEmpty ? e.description[0] : '-').toUpperCase(),
+            //     style: TextStyle(
+            //       color: AppTheme.adminWhite,
+            //       fontWeight: FontWeight.w700,
+            //       fontSize: 14.sp,
+            //     ),
+            //   ),
+            // ),
+            title: Text(
+              e.description,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: titleStyle,
+            ),
+            // keep subtitle empty (or add category/notes later)
+            subtitle: null,
+            trailing: Text(
+              _fmt(e.amount),
+              style: amountStyle,
+            ),
           ),
         );
       },
     );
   }
 
+  String _fmt(double v) =>
+      v.toStringAsFixed(v % 1 == 0 ? 0 : 2); // 100 → 100 ; 100.5 → 100.50
+
   bool _isTotal(String d) {
     final s = d.trim().toUpperCase();
     return s == 'TOTAL INCOME' || s == 'TOTAL EXPENSES' || s == 'NET PROFIT';
   }
 }
+

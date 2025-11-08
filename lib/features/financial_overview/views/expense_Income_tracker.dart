@@ -1,4 +1,3 @@
-// lib/features/financial_overview/views/expense_income_tracker.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -9,7 +8,6 @@ import '../../../core/constants/app_floatAction.dart';
 
 import '../models/expense_Income_tracker.dart';
 import '../viewModels/expense_income_tracker_view_model.dart';
-import '../models/cash_book_model.dart'; // CashBookItem, TransactionMode, LedgerGroup
 
 class ExpenseIncomeTracker extends StatelessWidget {
   const ExpenseIncomeTracker({super.key});
@@ -74,9 +72,9 @@ class _TrackerScaffoldState extends State<_TrackerScaffold> {
 Future<void> _openFilterDialog(BuildContext context) async {
   final vm = context.read<ExpenseIncomeTrackerViewModel>();
 
-  DateTime from = vm.fromDate ?? DateTime.now();
-  DateTime to   = vm.toDate   ?? DateTime.now();
-  String group  = vm.group; // EXPENSE / INCOME / ASSET / LIABILITY (any casing ok)
+  DateTime from = vm.fromDate ?? DateTime.now().subtract(Duration(days: 10));
+  DateTime to   = vm.toDate   ?? DateTime.now().subtract(Duration(days: 1));
+  String group  = vm.group; // EXPENSE / INCOME
 
   await showDialog(
     context: context,
@@ -84,84 +82,93 @@ Future<void> _openFilterDialog(BuildContext context) async {
     builder: (ctx) {
       final formKey = GlobalKey<FormState>();
 
-      return AlertDialog(
-        backgroundColor: AppTheme.adminGreenDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: const Text(
-          'Filter — Expense/Income',
-          style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
-        ),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _DateField(
-                  label: 'From Date',
-                  date: from,
-                  onTap: () async {
-                    final picked = await _pickDate(ctx, from);
-                    if (picked != null) from = picked;
-                  },
-                ),
-                SizedBox(height: 10.h),
-                _DateField(
-                  label: 'To Date',
-                  date: to,
-                  onTap: () async {
-                    final picked = await _pickDate(ctx, to);
-                    if (picked != null) to = picked;
-                  },
-                ),
-                SizedBox(height: 10.h),
-                DropdownButtonFormField<String>(
-                  value: group,
-                  items: const [
-                    DropdownMenuItem(value: 'EXPENSE',   child: Text('Expense')),
-                    DropdownMenuItem(value: 'INCOME',    child: Text('Income')),
-                    // DropdownMenuItem(value: 'ASSET',     child: Text('Asset')),
-                    // DropdownMenuItem(value: 'LIABILITY', child: Text('Liability')),
+      return StatefulBuilder(
+        builder: (ctx, setStateDialog) {
+          Future<void> pickFrom() async {
+            final picked = await _pickDate(ctx, from);
+            if (picked != null) {
+              setStateDialog(() {
+                from = DateTime(picked.year, picked.month, picked.day);
+                if (to.isBefore(from)) to = from; // keep range valid
+              });
+            }
+          }
+
+          Future<void> pickTo() async {
+            final picked = await _pickDate(ctx, to);
+            if (picked != null) {
+              setStateDialog(() {
+                to = DateTime(picked.year, picked.month, picked.day);
+                if (from.isAfter(to)) from = to; // keep range valid
+              });
+            }
+          }
+
+          return AlertDialog(
+            backgroundColor: AppTheme.adminGreenDark,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+            title: const Text(
+              'Filter — Expense/Income',
+              style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
+            ),
+            content: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _DateField(label: 'From Date', date: from, onTap: pickFrom),
+                    SizedBox(height: 10.h),
+                    _DateField(label: 'To Date', date: to, onTap: pickTo),
+                    SizedBox(height: 10.h),
+                    DropdownButtonFormField<String>(
+                      value: group,
+                      items: const [
+                        DropdownMenuItem(value: 'EXPENSE', child: Text('Expense')),
+                        DropdownMenuItem(value: 'INCOME',  child: Text('Income')),
+                      ],
+                      onChanged: (v) => setStateDialog(() => group = v ?? group),
+                      validator: (v) => v == null || v.trim().isEmpty ? 'Select a group' : null,
+                      decoration: _inputDeco('Group'),
+                      dropdownColor: AppTheme.adminGreenDark,
+                      style: const TextStyle(color: AppTheme.adminWhite),
+                    ),
                   ],
-                  onChanged: (v) => group = v ?? group,
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Select a group' : null,
-                  decoration: _inputDeco('Group'),
-                  dropdownColor: AppTheme.adminGreenDark,
-                  style: const TextStyle(color: AppTheme.adminWhite),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('CANCEL', style: TextStyle(color: AppTheme.adminWhite)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.adminGreen,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-            ),
-            onPressed: () async {
-              if (!formKey.currentState!.validate()) return;
-              if (from.isAfter(to)) {
-                ScaffoldMessenger.of(ctx).showSnackBar(
-                  const SnackBar(content: Text('From Date cannot be after To Date')),
-                );
-                return;
-              }
-              await vm.fetch(from: from, to: to, group: group);
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('SUBMIT'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('CANCEL', style: TextStyle(color: AppTheme.adminWhite)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.adminGreen,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                ),
+                onPressed: () async {
+                  if (!formKey.currentState!.validate()) return;
+                  if (from.isAfter(to)) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      const SnackBar(content: Text('From Date cannot be after To Date')),
+                    );
+                    return;
+                  }
+                  await vm.fetch(from: from, to: to, group: group);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: const Text('SUBMIT'),
+              ),
+            ],
+          );
+        },
       );
     },
   );
 }
+
 
 Future<DateTime?> _pickDate(BuildContext ctx, DateTime initial) {
   return showDatePicker(
@@ -321,6 +328,7 @@ class _TrackerContentState extends State<_TrackerContent> {
         Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Wrap(
@@ -497,7 +505,7 @@ class _TrackerTable extends StatelessWidget {
                   DataCell(SizedBox(width: 150.w, child: Text(e.ledgerName, overflow: TextOverflow.ellipsis))),
                   DataCell(SizedBox(width: 260.w, child: Text(e.narration, overflow: TextOverflow.ellipsis))),
                   DataCell(Text(e.mode.name.toUpperCase())),
-                  DataCell(SizedBox(width: 120.w, child: Text(e.transactionRefNo, overflow: TextOverflow.ellipsis))),
+                  DataCell(SizedBox(width: 60.w, child: Text(e.transactionRefNo, overflow: TextOverflow.ellipsis))),
                   DataCell(Text(e.debit.toStringAsFixed(2))),
                   DataCell(Text(e.credit.toStringAsFixed(2))),
                 ],
@@ -522,104 +530,152 @@ class _TrackerTiles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
-    const minTileW = 280.0;
-    final crossAxisCount = (screenW / minTileW).floor().clamp(1, 4);
-
-    return GridView.builder(
+    return ListView.separated(
       padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        childAspectRatio: 1.1,
-      ),
       itemCount: items.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (_, i) {
         final e = items[i];
+
         return Container(
           decoration: BoxDecoration(
             color: AppTheme.adminWhite.withOpacity(.06),
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
           ),
-          padding: EdgeInsets.all(12.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${_fmt(e.tranDate)} — ${e.mode.name.toUpperCase()}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.adminWhite,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+
+            // Leading badge (first letter of mode)
+            // leading: Container(
+            //   width: 42.w,
+            //   height: 42.w,
+            //   alignment: Alignment.center,
+            //   decoration: BoxDecoration(
+            //     color: AppTheme.adminWhite.withOpacity(.08),
+            //     borderRadius: BorderRadius.circular(10.r),
+            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+            //   ),
+            //   child: Text(
+            //     (e.mode.name.isNotEmpty ? e.mode.name[0] : '-').toUpperCase(),
+            //     style: TextStyle(
+            //       color: AppTheme.adminWhite,
+            //       fontWeight: FontWeight.w800,
+            //       fontSize: 14.sp,
+            //     ),
+            //   ),
+            // ),
+
+            // Title: Ledger (bold)
+            title: Text(
+              e.ledgerName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppTheme.adminWhite,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w800,
               ),
-              SizedBox(height: 4.h),
-              Text(
-                e.ledgerName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.adminWhite,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              if (e.transactionRefNo.trim().isNotEmpty) ...[
-                SizedBox(height: 2.h),
-                Text(
-                  'Ref: ${e.transactionRefNo}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppTheme.adminWhite.withOpacity(.75),
-                    fontSize: 10.5.sp,
-                  ),
-                ),
-              ],
-              SizedBox(height: 8.h),
-              Text(
-                e.narration,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.adminWhite.withOpacity(.9),
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 10.h),
-              Row(
+            ),
+
+            // Subtitle: date + mode + optional ref + narration (2 lines)
+            subtitle: Padding(
+              padding: EdgeInsets.only(top: 6.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _pill('DEBIT', e.debit, highlight: true),
-                  SizedBox(width: 8.w),
-                  _pill('CREDIT', e.credit),
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 4.h,
+                    children: [
+                      _chipSmall('${_fmt(e.tranDate)}'),
+                      _chipSmall(e.mode.name.toUpperCase()),
+                      if (e.transactionRefNo.trim().isNotEmpty)
+                        _chipSmall('Ref: ${e.transactionRefNo}'),
+                    ],
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    e.narration,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppTheme.adminWhite.withOpacity(.9),
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
-              const Spacer(),
-            ],
+            ),
+
+            // Trailing: Debit / Credit stacked
+            trailing: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'Debit: ${e.debit.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: AppTheme.adminWhite.withOpacity(.9),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Credit: ${e.credit.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: AppTheme.adminWhite.withOpacity(.9),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                // _amt('DEBIT', e.debit, highlight: true),
+                // SizedBox(height: 6.h),
+                // _amt('CREDIT', e.credit),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _pill(String label, double value, {bool highlight = false}) {
+  Widget _chipSmall(String text) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: AppTheme.adminWhite.withOpacity(.06),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: AppTheme.adminWhite.withOpacity(.85),
+          fontSize: 10.5.sp,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _amt(String label, double value, {bool highlight = false}) {
     final bg  = highlight ? AppTheme.adminGreen.withOpacity(.28) : AppTheme.adminGreen.withOpacity(.18);
     final br  = highlight ? AppTheme.adminGreen : AppTheme.adminGreen.withOpacity(.55);
     final txt = highlight ? Colors.black : AppTheme.adminGreen;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: br),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
             value.toStringAsFixed(value % 1 == 0 ? 0 : 2),
@@ -642,3 +698,4 @@ class _TrackerTiles extends StatelessWidget {
     );
   }
 }
+

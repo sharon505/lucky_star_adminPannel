@@ -433,7 +433,7 @@ class _CashBookTable extends StatelessWidget {
               ...items.map((e) => DataRow(
                 cells: [
                   DataCell(SizedBox(
-                    width: 240.w,
+                    width: 130.w,
                     child: Text(e.particulars, overflow: TextOverflow.ellipsis),
                   )),
                   DataCell(SizedBox(
@@ -475,19 +475,10 @@ class _CashBookTiles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
-    const minTileW = 260.0;
-    final crossAxisCount = (screenW / minTileW).floor().clamp(1, 4);
-
-    return GridView.builder(
+    return ListView.separated(
       padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        childAspectRatio: 1.95,
-      ),
       itemCount: items.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (_, i) {
         final e = items[i];
         return Container(
@@ -496,80 +487,102 @@ class _CashBookTiles extends StatelessWidget {
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
           ),
-          padding: EdgeInsets.all(12.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                e.particulars,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.adminWhite,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+
+            // Leading monogram (from particulars)
+            // leading: Container(
+            //   width: 40.w,
+            //   height: 40.w,
+            //   alignment: Alignment.center,
+            //   decoration: BoxDecoration(
+            //     color: AppTheme.adminWhite.withOpacity(.08),
+            //     borderRadius: BorderRadius.circular(10.r),
+            //     border: Border.all(color: AppTheme.adminWhite.withOpacity(.12)),
+            //   ),
+            //   child: Text(
+            //     (e.particulars.isNotEmpty ? e.particulars[0] : '-').toUpperCase(),
+            //     style: TextStyle(
+            //       color: AppTheme.adminWhite,
+            //       fontWeight: FontWeight.w700,
+            //       fontSize: 14.sp,
+            //     ),
+            //   ),
+            // ),
+
+            // Title: particulars
+            title: Text(
+              e.particulars,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppTheme.adminWhite,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
               ),
-              SizedBox(height: 6.h),
-              if (e.voucherNo.trim().isNotEmpty)
-                Text(
-                  'Voucher: ${e.voucherNo}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppTheme.adminWhite.withOpacity(.75),
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              SizedBox(height: 8.h),
-              Row(
+            ),
+
+            // Subtitle: optional voucher + two metric rows
+            subtitle: Padding(
+              padding: EdgeInsets.only(top: 6.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _pill('DEBIT', e.debit, highlight: true),
-                  SizedBox(width: 8.w),
-                  _pill('CREDIT', e.credit),
+                  if (e.voucherNo.trim().isNotEmpty) ...[
+                    Text(
+                      'Voucher: ${e.voucherNo}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppTheme.adminWhite.withOpacity(.75),
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                  ],
+                  _kvRow('Debit', _fmt(e.debit), highlightValue: true),
+                  SizedBox(height: 4.h),
+                  _kvRow('Credit', _fmt(e.credit)),
                 ],
               ),
-              const Spacer(),
-            ],
+            ),
+
+            // Empty trailing (or you can add a date/amount chip if available)
+            trailing: null,
           ),
         );
       },
     );
   }
 
-  Widget _pill(String label, double value, {bool highlight = false}) {
-    final bg  = highlight ? AppTheme.adminGreen.withOpacity(.28) : AppTheme.adminGreen.withOpacity(.18);
-    final br  = highlight ? AppTheme.adminGreen : AppTheme.adminGreen.withOpacity(.55);
-    final txt = highlight ? Colors.black : AppTheme.adminGreen;
+  String _fmt(double v) => v.toStringAsFixed(v % 1 == 0 ? 0 : 2);
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: br),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value.toStringAsFixed(value % 1 == 0 ? 0 : 2),
+  /// key : value row with the value right-aligned for a column-like look
+  Widget _kvRow(String key, String value, {bool highlightValue = false}) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            key,
             style: TextStyle(
-              color: txt,
-              fontWeight: FontWeight.w800,
+              color: AppTheme.adminWhite.withOpacity(.78),
               fontSize: 12.sp,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: AppTheme.adminWhite.withOpacity(.75),
-              fontSize: 10.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
-        ],
-      ),
+        ),
+        Text(
+          value,
+          textAlign: TextAlign.right,
+          style: TextStyle(
+            color: highlightValue ? AppTheme.adminGreen : AppTheme.adminWhite.withOpacity(.95),
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
   }
 }
+

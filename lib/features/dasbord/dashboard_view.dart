@@ -15,12 +15,12 @@ List<_Model> list = [
   _Model(
     icon: Icons.dashboard_outlined,
     // text: 'financial overview',
-    text: 'overview',
+    text: 'Financial',
     page: FinancialOverviewPage(),
   ),
   _Model(
-    icon: Icons.person_2,
-    text: 'settings',
+    icon: Icons.inventory_2_outlined,
+    text: 'Master Data',
     page: Center(
       child: Text("settings"),
     ),

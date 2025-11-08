@@ -34,7 +34,8 @@ class _DayBookScaffold extends StatelessWidget {
         // tooltip: 'Filter Date',
       ),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(12, 12, 12, 96),
+        padding: EdgeInsets.all(12.w),
+        // padding: EdgeInsets.fromLTRB(12, 12, 12, 96),
         child: _DayBookContent(
           isLoading: vm.isLoading,
           error: vm.error,
@@ -245,19 +246,21 @@ class _DayBookContentState extends State<_DayBookContent> {
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Wrap(
-                  spacing: 14.w,
-                  runSpacing: 6.h,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    _chip('Date', widget.date != null ? _fmt(widget.date!) : '-'),
-                    _chip('Debit', widget.totalDebit.toStringAsFixed(2)),
-                    _chip('Credit', widget.totalCredit.toStringAsFixed(2)),
-                    _chip('Net', widget.net.toStringAsFixed(2), highlight: true),
-                  ],
-                ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 14.w,
+                //runSpacing: 6.h,
+                //crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  _chip('Date', widget.date != null ? _fmt(widget.date!) : '-'),
+                  _chip('Debit', widget.totalDebit.toStringAsFixed(2)),
+                  _chip('Credit', widget.totalCredit.toStringAsFixed(2)),
+                  _chip('Net', widget.net.toStringAsFixed(2), highlight: true),
+                ],
               ),
               Container(
                 decoration: BoxDecoration(
@@ -381,56 +384,71 @@ class _ViewChip extends StatelessWidget {
 }
 
 /// ---------------- Table view ----------------
+/// ---------------- Table view (now scrolls vertically + horizontally) ----------------
 class _DayBookTable extends StatelessWidget {
   final List<DayBookItem> items;
   const _DayBookTable({required this.items});
 
+  String _fmt(DateTime d) {
+    String two(int n) => n < 10 ? '0$n' : '$n';
+    return '${two(d.day)}/${two(d.month)}/${d.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topLeft,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 980.w),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 14.w,
-            horizontalMargin: 12.w,
-            headingRowHeight: 36.h,
-            dataRowMinHeight: 36.h,
-            dataRowMaxHeight: 40.h,
-            headingRowColor: WidgetStateProperty.all(AppTheme.adminWhite.withOpacity(.08)),
-            headingTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontWeight: FontWeight.w700,
-              fontSize: 12.sp,
+    return SingleChildScrollView(                // ← vertical scroll
+      padding: EdgeInsets.only(bottom: 12.h),    // space above FAB
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 980.w),
+          child: SingleChildScrollView(          // ← horizontal scroll
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columnSpacing: 14.w,
+              horizontalMargin: 12.w,
+              headingRowHeight: 36.h,
+              dataRowMinHeight: 36.h,
+              dataRowMaxHeight: 40.h,
+              headingRowColor: WidgetStateProperty.all(
+                AppTheme.adminWhite.withOpacity(.08),
+              ),
+              headingTextStyle: TextStyle(
+                color: AppTheme.adminWhite,
+                fontWeight: FontWeight.w700,
+                fontSize: 12.sp,
+              ),
+              dataTextStyle: TextStyle(
+                color: AppTheme.adminWhite,
+                fontSize: 12.sp,
+              ),
+              columns: const [
+                DataColumn(label: Text('DATE')),
+                DataColumn(label: Text('DESCRIPTION')),
+                DataColumn(label: Text('DEBIT')),
+                DataColumn(label: Text('CREDIT')),
+              ],
+              rows: items.map((e) {
+                return DataRow(
+                  cells: [
+                    DataCell(Text(_fmt(e.tranDate))),
+                    DataCell(SizedBox(
+                      width: 240.w,
+                      child: Text(e.description, overflow: TextOverflow.ellipsis),
+                    )),
+                    DataCell(Text(e.debit.toStringAsFixed(2))),
+                    DataCell(Text(e.credit.toStringAsFixed(2))),
+                  ],
+                );
+              }).toList(),
             ),
-            dataTextStyle: TextStyle(
-              color: AppTheme.adminWhite,
-              fontSize: 12.sp,
-            ),
-            columns: const [
-              DataColumn(label: Text('DATE')),
-              DataColumn(label: Text('DESCRIPTION')),
-              DataColumn(label: Text('DEBIT')),
-              DataColumn(label: Text('CREDIT')),
-            ],
-            rows: items.map((e) {
-              return DataRow(
-                cells: [
-                  DataCell(Text(_fmt(e.tranDate))),
-                  DataCell(SizedBox(width: 240.w, child: Text(e.description, overflow: TextOverflow.ellipsis))),
-                  DataCell(Text(e.debit.toStringAsFixed(2))),
-                  DataCell(Text(e.credit.toStringAsFixed(2))),
-                ],
-              );
-            }).toList(),
           ),
         ),
       ),
     );
   }
 }
+
 
 /// ---------------- Tile view ----------------
 class _DayBookTiles extends StatelessWidget {

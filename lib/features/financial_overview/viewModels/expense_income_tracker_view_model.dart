@@ -90,10 +90,12 @@ class ExpenseIncomeTrackerViewModel with ChangeNotifier {
 
   /// Convenience: defaults to today..today for EXPENSE.
   Future<void> autoBootstrap() async {
-    final now = DateTime.now();
+    final now   = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    await fetch(from: today, to: today, group: _group);
+    final from  = DateTime(today.year, today.month, 1); // 1st of this month
+    await fetch(from: from, to: today, group: _group);
   }
+
 
   void setRange(DateTime from, DateTime to, {bool fetchNow = false}) {
     _from = DateTime(from.year, from.month, from.day);
