@@ -33,12 +33,15 @@ class ApiEndpoints {
   static final Uri cashCollectionByAgent   = _u('REPORT_CASH_RECEIVED');///finish
 
   // ---- Financial overview ----
-  static final Uri cashBook                = _u('GetCashBook');///finish
-  static final Uri dayBook                 = _u('sp_DaybookReport');
-  static final Uri profitAndLossStatement  = _u('REPORT_PANDL');
-  static final Uri expenseIncomeTracker    = _u('USP_GETJOURNALENTRYREPORT');
+  static final Uri cashBook                = _u('REPORT_CASH_BOOK');///finish
+  static final Uri dayBook                 = _u('sp_DaybookReport');///finish
+  static final Uri profitAndLossStatement  = _u('REPORT_PANDL');///finish
+  static final Uri expenseIncomeTracker    = _u('USP_GETJOURNALENTRYREPORT');///finish
 
   // ---- Extra ----
   static final Uri getAgent                = _u('USP_GetDistributor_LIST');///finish
   static final Uri getProducts             = _u('USP_Getproducts'); ///finish
+
+  // ---- Dash Bord ----
+  static final Uri dashboard               = _u('GET_DASHBOARD'); ///finish
 }

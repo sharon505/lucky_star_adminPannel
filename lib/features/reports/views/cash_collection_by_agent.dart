@@ -77,7 +77,7 @@ class _CashCollectionScaffoldState extends State<_CashCollectionScaffold> {
     final vm = context.watch<CashCollectionByAgentViewModel>();
 
     return Scaffold(
-      appBar: const AppAppbar(text: 'Cash Collection By Agent'),
+      appBar: const AppAppbar(text: 'Cash Collection From Agent'),
       backgroundColor: AppTheme.adminGreenLite,
       floatingActionButton: AppFloatAction(onPressed: () => _openFilterDialog(context)),
       body: Padding(
@@ -148,7 +148,7 @@ Future<void> _openFilterDialog(BuildContext context) async {
         backgroundColor: AppTheme.adminGreenDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: const Text(
-          'Filter — Cash Collection',
+          'Cash Collection',
           style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
         ),
         content: Form(

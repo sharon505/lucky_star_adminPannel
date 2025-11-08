@@ -29,8 +29,67 @@ class CurrentStockByAgent extends StatelessWidget {
   }
 }
 
-class _StockByAgentScaffold extends StatelessWidget {
+class _StockByAgentScaffold extends StatefulWidget {
   const _StockByAgentScaffold();
+
+  @override
+  State<_StockByAgentScaffold> createState() => _StockByAgentScaffoldState();
+}
+
+class _StockByAgentScaffoldState extends State<_StockByAgentScaffold> {
+  bool _bootstrapped = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap(context));
+  }
+
+  Future<void> _bootstrap(BuildContext context) async {
+    if (_bootstrapped) return;
+
+    final stockVm   = context.read<CurrentStockByAgentViewModel>();
+    final productVm = context.read<ProductViewModel>();
+    final agentVm   = context.read<DistributorViewModel>();
+
+    // Wait briefly for product & agent lists to load (MultiProvider already called load()).
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (
+    (productVm.isLoading || agentVm.isLoading) &&
+        DateTime.now().isBefore(deadline)
+    ) {
+      await Future.delayed(const Duration(milliseconds: 120));
+    }
+
+    // Prefer filteredItems; fall back to raw lists
+    final products = productVm.filteredItems.isNotEmpty
+        ? productVm.filteredItems
+        : productVm.items;
+
+    final agents = agentVm.filteredItems.isNotEmpty
+        ? agentVm.filteredItems
+        : agentVm.items;
+
+    // If we still have nothing, keep UI usable; user can open the filter dialog.
+    if (products.isEmpty) {
+      if (mounted) setState(() => _bootstrapped = true);
+      return;
+    }
+
+    // Respect any previously chosen IDs in the VM; otherwise pick first available.
+    final int productId = stockVm.productId ??
+        (productVm.selected?.productId ?? products.first.productId);
+
+    // agentId: 0 means ALL (your VM already supports 0). If VM has a non-zero selection, keep it;
+    // else try selected agent or default to 0 if no agents available.
+    final int agentId = (stockVm.agentId != 0)
+        ? stockVm.agentId
+        : (agentVm.selected?.distributorId ?? (agents.isNotEmpty ? agents.first.distributorId : 0));
+
+    await stockVm.fetch(productId: productId, agentId: agentId);
+
+    if (mounted) setState(() => _bootstrapped = true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +105,8 @@ class _StockByAgentScaffold extends StatelessWidget {
         padding: EdgeInsets.all(12.w),
         child: _StockContent(
           items: vm.filteredItems,
-          isLoading: vm.isLoading,
+          // Show spinner during initial bootstrap for clear feedback
+          isLoading: vm.isLoading || !_bootstrapped,
           error: vm.error,
           totalIssued: vm.totalIssued,
           totalSale: vm.totalSale,
@@ -56,6 +116,7 @@ class _StockByAgentScaffold extends StatelessWidget {
     );
   }
 }
+
 
 /// ---------------- Filter Dialog ----------------
 

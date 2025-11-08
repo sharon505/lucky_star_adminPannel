@@ -74,7 +74,7 @@ class _SalesDetailsScaffoldState extends State<_SalesDetailsScaffold> {
     final vm = context.watch<SalesDetailsByAgentViewModel>();
 
     return Scaffold(
-      appBar: const AppAppbar(text: 'Sales Details From Agent'),
+      appBar: const AppAppbar(text: 'Sales Details By Agent'),
       backgroundColor: AppTheme.adminGreenLite,
       floatingActionButton: AppFloatAction(
         onPressed: () => _openFilterDialog(context),
@@ -439,13 +439,14 @@ class _SalesContentState extends State<_SalesContent> {
                   runSpacing: 6.h,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Text(
-                      'Rows: ${widget.items.length}',
-                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
-                    ),
+                    // Text(
+                    //   'Rows: ${widget.items.length}',
+                    //   style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
+                    // ),
                     Text(
                       'Total Sale: ${widget.totalSale.toStringAsFixed(2)}',
-                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
+                      style: TextStyle(
+                          color: AppTheme.adminGreen.withOpacity(.85), fontSize: 14.sp,fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

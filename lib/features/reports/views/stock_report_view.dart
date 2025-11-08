@@ -22,8 +22,56 @@ class StockReportView extends StatelessWidget {
   }
 }
 
-class _StockReportScaffold extends StatelessWidget {
+class _StockReportScaffold extends StatefulWidget {
   const _StockReportScaffold();
+
+  @override
+  State<_StockReportScaffold> createState() => _StockReportScaffoldState();
+}
+
+class _StockReportScaffoldState extends State<_StockReportScaffold> {
+  bool _bootstrapped = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap(context));
+  }
+
+  Future<void> _bootstrap(BuildContext context) async {
+    if (_bootstrapped) return;
+
+    final productVm = context.read<ProductViewModel>();
+    final stockVm   = context.read<StockReportViewModel>();
+
+    // Wait briefly for products to load (since ProductViewModel.load() runs elsewhere)
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (productVm.isLoading && DateTime.now().isBefore(deadline)) {
+      await Future.delayed(const Duration(milliseconds: 120));
+    }
+
+    // If still no products or error, don't block the screen; user can open filter dialog to retry
+    List<ProductItem> list = productVm.filteredItems.isNotEmpty
+        ? productVm.filteredItems
+        : productVm.items;
+
+    if (list.isEmpty) {
+      setState(() => _bootstrapped = true);
+      return;
+    }
+
+    // Prefer VM’s already-selected product if present, else first available
+    final int productId = stockVm.productId != 0
+        ? stockVm.productId
+        : (productVm.selected?.productId ?? list.first.productId);
+
+    // Use VM’s date (it already holds last-picked date or a sensible default)
+    final DateTime date = stockVm.date;
+
+    await stockVm.fetch(date: date, productId: productId);
+
+    if (mounted) setState(() => _bootstrapped = true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +87,8 @@ class _StockReportScaffold extends StatelessWidget {
         padding: EdgeInsets.all(12.w),
         child: _StockTable(
           items: stockVm.items,
-          isLoading: stockVm.isLoading,
+          // While bootstrapping, force the spinner so there’s clear feedback
+          isLoading: stockVm.isLoading || !_bootstrapped,
           error: stockVm.error,
           date: stockVm.date,
           productId: stockVm.productId,
@@ -48,6 +97,7 @@ class _StockReportScaffold extends StatelessWidget {
     );
   }
 }
+
 
 /// ---------------- Dialog ----------------
 

@@ -9,7 +9,7 @@ class AgentStockIssueViewModel extends ChangeNotifier {
   final AgentStockIssueService _service;
 
   // ---- Filters ----
-  DateTime _dateFrom = DateTime.now();
+  DateTime _dateFrom = DateTime.now().subtract(const Duration(days: 30));
   DateTime _dateTo   = DateTime.now();
   int? _productId;       // required before fetch
   int? _distributorId;   // a.k.a. agentId (required before fetch)
@@ -146,8 +146,9 @@ class AgentStockIssueViewModel extends ChangeNotifier {
 
   /// Full reset (also clears filters)
   void reset() {
-    _dateFrom = DateTime.now();
-    _dateTo = DateTime.now();
+    final now = DateTime.now();
+    _dateFrom = now.subtract(const Duration(days: 30));
+    _dateTo   = now;
     _productId = null;
     _distributorId = null;
     _query = '';
@@ -155,6 +156,7 @@ class AgentStockIssueViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
 
   // ---- internals ----
   void _setLoading(bool v) {

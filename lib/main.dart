@@ -12,6 +12,8 @@ import 'features/auth/views/login_view.dart';
 import 'features/auth/views/splash_view.dart';
 import 'features/dasbord/dashboard_view.dart';
 import 'features/financial_overview/viewModels/cash_book_view_model.dart';
+import 'features/financial_overview/viewModels/day_book_view_model.dart';
+import 'features/financial_overview/viewModels/expense_income_tracker_view_model.dart';
 import 'features/financial_overview/viewModels/profit_loss_view_model.dart';
 import 'features/financial_overview/views/day_book.dart';
 import 'features/financial_overview/views/expense_Income_tracker.dart';
@@ -22,6 +24,7 @@ import 'features/reports/viewModels/agent_stock_issue_view_model.dart';
 import 'features/reports/viewModels/cash_collection_by_agent_view_model.dart';
 import 'features/reports/viewModels/cash_receivables_view_model.dart';
 import 'features/reports/viewModels/current_stock_by_agent_view_model.dart';
+import 'features/reports/viewModels/dashboard_view_model.dart';
 import 'features/reports/viewModels/distributor_view_model.dart';
 import 'features/reports/viewModels/prize_search_view_model.dart';
 import 'features/reports/viewModels/product_view_model.dart';
@@ -55,6 +58,8 @@ List<SingleChildWidget> providers = [
   ///Auth
   ChangeNotifierProvider(create: (context) => AuthViewModel()),
   ChangeNotifierProvider(create: (context) => LoginFormProvider()),
+  ///Financial
+  ChangeNotifierProvider(create: (context) => DashboardViewModel()..fetch()),
   ///ticket search
   ChangeNotifierProvider(create: (_) => PrizeSearchViewModel()),
   ///report
@@ -68,7 +73,9 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => CashCollectionByAgentViewModel()),
   ///Financial
   ChangeNotifierProvider(create: (_) => CashBookViewModel()),
+  ChangeNotifierProvider(create: (_) => DayBookViewModel()..autoBootstrap()),
   ChangeNotifierProvider(create: (_) => ProfitLossViewModel()..autoBootstrap()),
+  ChangeNotifierProvider(create: (_) => ExpenseIncomeTrackerViewModel()),
 ];
 
 //9567030890

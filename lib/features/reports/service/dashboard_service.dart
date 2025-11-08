@@ -1,36 +1,36 @@
-// lib/features/reports/services/cash_book_service.dart
+// lib/features/financial_overview/services/dashboard_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../../core/network/api_endpoints.dart';
-import '../models/cash_book_model.dart';
+import '../models/stock_summary_model.dart'; // StockSummaryResponse
 
-class CashBookService {
+class DashboardService {
   final http.Client _client;
   final Duration timeout;
 
-  CashBookService({
+  DashboardService({
     http.Client? client,
     this.timeout = const Duration(seconds: 30),
   }) : _client = client ?? http.Client();
 
-  /// Fetch Cash Book for a specific date (expects yyyy-MM-dd).
-  Future<DayBookResponse> fetchByDateStr({required String date}) async {
+  /// Calls GET_DASHBOARD with no body.
+  Future<StockSummaryResponse> fetch() async {
     final res = await _client
         .post(
-      ApiEndpoints.cashBook, // static final Uri cashBook = _u('REPORT_CASH_BOOK');
+      ApiEndpoints.dashboard,           // static final Uri dashboard = _u('GET_DASHBOARD');
       headers: ApiEndpoints.formHeaders,
-      body: {'DATE': date}, // e.g., 2025-11-06
+      // body: null  // body omitted – request has no body
     )
         .timeout(timeout);
 
     if (res.statusCode != 200) {
-      throw Exception('REPORT_CASH_BOOK failed (${res.statusCode}): ${res.body}');
+      throw Exception('GET_DASHBOARD failed (${res.statusCode}): ${res.body}');
     }
 
     final Map<String, dynamic> decoded =
     jsonDecode(res.body) as Map<String, dynamic>;
-    return DayBookResponse.fromJson(decoded);
+    return StockSummaryResponse.fromJson(decoded);
   }
 
   void dispose() {

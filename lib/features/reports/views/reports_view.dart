@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/color_scheme.dart';
 import '../../../shared/app_gradient_background.dart';
+import '../viewModels/dashboard_view_model.dart';
 import '../viewModels/prize_search_view_model.dart';
+import '../widgets/dasbord/dashboard_overview_widget.dart';
 import '../widgets/sales/report_quick_tiles.dart';
 import '../widgets/stock_report/stock_report_tile.dart';
 import '../widgets/ticket_search/prize_claim_card_widget.dart';
@@ -24,33 +26,45 @@ class ReportsView extends StatelessWidget {
       colors: [AppTheme.adminGreenDark, AppTheme.adminGreenDark],
       child: Padding(
         padding: AppPadding.allSmall,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ///ticketSearch
-            height,
-            _ticketSearch(context),
-
-            ///stockReport
-            _stocks(
-              context,
-              onTap: [
-                () => Navigator.pushNamed(context, 'StockReportView'),
-                () => Navigator.pushNamed(context, 'AgentStockIssueDetails'),
-                () => Navigator.pushNamed(context, 'CurrentStockByAgent'),
-              ],
-            ),
-            height,
-            _salesList(
-              context,
-              onTap: [
-                () => Navigator.pushNamed(context, 'SalesDetailsByAgent'),
-                () => Navigator.pushNamed(context, 'CashReceivablesByAgent'),
-                () => Navigator.pushNamed(context, 'CashCollectionByAgent'),
-              ],
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ///ticketSearch
+              height,
+              _ticketSearch(context),
+              ///dasbord
+              Consumer<DashboardViewModel>(
+                builder: (context, vm, _) => Padding(
+                  padding: EdgeInsets.only(bottom: 16.h),
+                  child: DashboardOverview.fromViewModel(
+                    vm: vm,
+                    onRefresh: vm.refresh,
+                    embedded: true,
+                  ),
+                ),
+              ),
+              ///stockReport
+              _stocks(
+                context,
+                onTap: [
+                  () => Navigator.pushNamed(context, 'StockReportView'),
+                  () => Navigator.pushNamed(context, 'AgentStockIssueDetails'),
+                  () => Navigator.pushNamed(context, 'CurrentStockByAgent'),
+                ],
+              ),
+              height,
+              _salesList(
+                context,
+                onTap: [
+                  () => Navigator.pushNamed(context, 'SalesDetailsByAgent'),
+                  () => Navigator.pushNamed(context, 'CashReceivablesByAgent'),
+                  () => Navigator.pushNamed(context, 'CashCollectionByAgent'),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -178,19 +192,19 @@ class ReportsView extends StatelessWidget {
 
     final items = <ReportTileData>[
       ReportTileData(
-        title: 'Sales Details from Agent',
+        title: 'Sales Details By Agent',
         subtitle: 'Agent-wise entries',
         leadingIcon: Icons.receipt_long_rounded,
         onTap: _at(0),
       ),
       ReportTileData(
-        title: 'Cash Receivables By Agent',
+        title: 'Cash Receivables From Agent',
         subtitle: 'Agent-wise entries',
         leadingIcon: Icons.request_quote_rounded,
         onTap: _at(1),
       ),
       ReportTileData(
-        title: 'Cash Collection By Agent',
+        title: 'Cash Collection From Agent',
         subtitle: 'Agent-wise entries',
         leadingIcon: Icons.payments_rounded,
         onTap: _at(2),

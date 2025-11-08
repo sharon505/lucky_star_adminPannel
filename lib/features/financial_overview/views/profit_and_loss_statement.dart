@@ -15,12 +15,12 @@ class ProfitAndLossStatement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _PandLScaffold();
+    return const _PandLScaffold();
   }
 }
 
 class _PandLScaffold extends StatelessWidget {
-  const _PandLScaffold();
+  const _PandLScaffold({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +90,9 @@ Future<void> _openFilterDialog(BuildContext context) async {
                       );
                     },
                   );
-                  if (picked != null) date = DateTime(picked.year, picked.month, picked.day);
+                  if (picked != null) {
+                    date = DateTime(picked.year, picked.month, picked.day);
+                  }
                 },
               ),
             ],
@@ -188,6 +190,7 @@ class _PandLContent extends StatefulWidget {
   final DateTime? date;
 
   const _PandLContent({
+    super.key,
     required this.isLoading,
     required this.error,
     required this.rows,
@@ -204,6 +207,49 @@ class _PandLContent extends StatefulWidget {
 class _PandLContentState extends State<_PandLContent> {
   _ViewMode _mode = _ViewMode.table;
 
+  // ---- Ordering helper: Income -> Expenses -> Others -> Totals ----
+  List<ProfitLossRow> _orderPandL(List<ProfitLossRow> src) {
+    final totals = <ProfitLossRow>[];
+    final incomes = <ProfitLossRow>[];
+    final expenses = <ProfitLossRow>[];
+    final others = <ProfitLossRow>[];
+
+    int _rank(ProfitLossRow e) {
+      final d = e.description.trim().toUpperCase();
+      if (d.contains('TOTAL INCOME') || d.contains('TOTAL EXPENSE') || d.contains('NET PROFIT')) return 3; // totals last
+      if (d.contains('INCOME')) return 0;   // income first
+      if (d.contains('EXPENSE')) return 1;  // then expenses
+      return 2;                              // anything else
+    }
+
+    for (final e in src) {
+      switch (_rank(e)) {
+        case 0:
+          incomes.add(e);
+          break;
+        case 1:
+          expenses.add(e);
+          break;
+        case 2:
+          others.add(e);
+          break;
+        default:
+          totals.add(e);
+          break;
+      }
+    }
+
+    // Sort inside groups if needed (by description). Change comparator to amount if preferred.
+    int byDesc(ProfitLossRow a, ProfitLossRow b) =>
+        a.description.toLowerCase().compareTo(b.description.toLowerCase());
+    incomes.sort(byDesc);
+    expenses.sort(byDesc);
+    others.sort(byDesc);
+    // Keep totals as-is so that server order (Total Income, Total Expenses, Net Profit) is preserved.
+
+    return [...incomes, ...expenses, ...others, ...totals];
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.isLoading) {
@@ -217,7 +263,8 @@ class _PandLContentState extends State<_PandLContent> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('No data', style: TextStyle(color: AppTheme.adminWhite.withOpacity(.9), fontSize: 14.sp)),
+            Text('No data',
+                style: TextStyle(color: AppTheme.adminWhite.withOpacity(.9), fontSize: 14.sp)),
             SizedBox(height: 10.h),
             Wrap(
               spacing: 8.w,
@@ -227,7 +274,10 @@ class _PandLContentState extends State<_PandLContent> {
                   child: const Text('Retry'),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.adminGreen, foregroundColor: Colors.black),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.adminGreen,
+                    foregroundColor: Colors.black,
+                  ),
                   onPressed: () => _openFilterDialog(context),
                   child: const Text('Set Filters'),
                 ),
@@ -242,6 +292,8 @@ class _PandLContentState extends State<_PandLContent> {
     final dateStr = widget.date != null
         ? '${two(widget.date!.day)}/${two(widget.date!.month)}/${widget.date!.year}'
         : '';
+
+    final ordered = _orderPandL(widget.rows);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -260,7 +312,10 @@ class _PandLContentState extends State<_PandLContent> {
                     if (dateStr.isNotEmpty)
                       Text(
                         'Date: $dateStr',
-                        style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
+                        style: TextStyle(
+                          color: AppTheme.adminWhite.withOpacity(.85),
+                          fontSize: 12.sp,
+                        ),
                       ),
                     _chipStat('Total Income', widget.totalIncome),
                     _chipStat('Total Expenses', widget.totalExpenses),
@@ -301,8 +356,8 @@ class _PandLContentState extends State<_PandLContent> {
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: _mode == _ViewMode.table
-                ? _PandLTable(items: widget.rows)
-                : _PandLTiles(items: widget.rows),
+                ? _PandLTable(items: ordered)
+                : _PandLTiles(items: ordered),
           ),
         ),
       ],
@@ -310,8 +365,10 @@ class _PandLContentState extends State<_PandLContent> {
   }
 
   Widget _chipStat(String label, double value, {bool highlight = false}) {
-    final bg  = highlight ? AppTheme.adminGreen.withOpacity(.28) : AppTheme.adminWhite.withOpacity(.06);
-    final br  = highlight ? AppTheme.adminGreen : AppTheme.adminWhite.withOpacity(.12);
+    final bg = highlight
+        ? AppTheme.adminGreen.withOpacity(.28)
+        : AppTheme.adminWhite.withOpacity(.06);
+    final br = highlight ? AppTheme.adminGreen : AppTheme.adminWhite.withOpacity(.12);
     final txt = highlight ? Colors.black : AppTheme.adminWhite;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
@@ -411,7 +468,12 @@ class _PandLTable extends StatelessWidget {
             rows: items.map((e) {
               return DataRow(
                 cells: [
-                  DataCell(SizedBox(width: 255.w, child: Text(e.description, overflow: TextOverflow.ellipsis))),
+                  DataCell(
+                    SizedBox(
+                      width: 255.w,
+                      child: Text(e.description, overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
                   DataCell(Text(e.amount.toStringAsFixed(2))),
                 ],
               );
@@ -448,7 +510,9 @@ class _PandLTiles extends StatelessWidget {
         final isTotal = _isTotal(e.description);
         return Container(
           decoration: BoxDecoration(
-            color: isTotal ? AppTheme.adminGreen.withOpacity(.25) : AppTheme.adminWhite.withOpacity(.06),
+            color: isTotal
+                ? AppTheme.adminGreen.withOpacity(.25)
+                : AppTheme.adminWhite.withOpacity(.06),
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: AppTheme.adminWhite.withOpacity(.10)),
           ),

@@ -19,19 +19,91 @@ class CashReceivablesByAgent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _CashReceivablesScaffold();
+    return MultiProvider(providers: [
+      ChangeNotifierProvider(create: (_) => ProductViewModel()..load()),
+      ChangeNotifierProvider(create: (_) => DistributorViewModel()..load()),
+      ChangeNotifierProvider(create: (_) => CashReceivablesViewModel()),
+    ],child: _CashReceivablesScaffold(),);
   }
 }
 
-class _CashReceivablesScaffold extends StatelessWidget {
+class _CashReceivablesScaffold extends StatefulWidget {
   const _CashReceivablesScaffold();
+
+  @override
+  State<_CashReceivablesScaffold> createState() => _CashReceivablesScaffoldState();
+}
+
+class _CashReceivablesScaffoldState extends State<_CashReceivablesScaffold> {
+  bool _bootstrapped = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Kick off initial fetch once product + agent lists are ready.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap(context));
+  }
+
+  Future<void> _bootstrap(BuildContext context) async {
+    if (_bootstrapped) return;
+
+    final productsVm = context.read<ProductViewModel>();
+    final agentsVm   = context.read<DistributorViewModel>();
+    final receVm     = context.read<CashReceivablesViewModel>();
+
+    // Wait (briefly) for Product & Agent lists to be available.
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (
+    (productsVm.isLoading || productsVm.filteredItems.isEmpty ||
+        agentsVm.isLoading   || agentsVm.filteredItems.isEmpty) &&
+        DateTime.now().isBefore(deadline)
+    ) {
+      await Future.delayed(const Duration(milliseconds: 120));
+    }
+
+    // If either list is still empty or errored, bail out silently.
+    if (productsVm.filteredItems.isEmpty || agentsVm.filteredItems.isEmpty) {
+      setState(() => _bootstrapped = true);
+      return;
+    }
+
+    // De-dupe like your dialog does, then pick first available.
+    int _firstUniqueProductId() {
+      final map = <int, ProductItem>{};
+      for (final p in productsVm.filteredItems) {
+        map[p.productId] = p;
+      }
+      final list = map.values.toList()
+        ..sort((a, b) => a.productName.toLowerCase().compareTo(b.productName.toLowerCase()));
+      return list.first.productId;
+    }
+
+    int _firstUniqueAgentId() {
+      final map = <int, DistributorItem>{};
+      for (final d in agentsVm.filteredItems) {
+        map[d.distributorId] = d;
+      }
+      final list = map.values.toList()
+        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      return list.first.distributorId;
+    }
+
+    // Respect any existing selections stored in the receivables VM (0 means unset).
+    final productId = receVm.productId != 0 ? receVm.productId : _firstUniqueProductId();
+    final agentId   = receVm.agentId   != 0 ? receVm.agentId   : _firstUniqueAgentId();
+
+    // Fire the initial fetch.
+    await receVm.fetch(agentId: agentId, productId: productId);
+
+    if (mounted) setState(() => _bootstrapped = true);
+  }
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<CashReceivablesViewModel>();
 
     return Scaffold(
-      appBar: const AppAppbar(text: 'Cash Receivables By Agent'),
+      appBar: const AppAppbar(text: 'Cash Receivables From Agent'),
       backgroundColor: AppTheme.adminGreenLite,
       floatingActionButton: AppFloatAction(
         onPressed: () => _openFilterDialog(context),
@@ -40,7 +112,7 @@ class _CashReceivablesScaffold extends StatelessWidget {
         padding: EdgeInsets.all(12.w),
         child: _ReceivablesTable(
           items: vm.filteredItems,
-          isLoading: vm.isLoading,
+          isLoading: vm.isLoading && !_bootstrapped ? true : vm.isLoading,
           error: vm.error,
           totalDebit: vm.totalDebit,
           totalCredit: vm.totalCredit,
@@ -328,11 +400,11 @@ class _ReceivablesTable extends StatelessWidget {
                   columns: const [
                     DataColumn(label: Text('SN')),
                     DataColumn(label: Text('AGENT')),
-                    DataColumn(label: Text('DEBIT')),
-                    DataColumn(label: Text('CREDIT')),
+                    DataColumn(label: Text('SALE')),
+                    DataColumn(label: Text('COLLECTION')),
+                    DataColumn(label: Text('RECEIVABLE')),
                     DataColumn(label: Text('PAYOUT')),
                     DataColumn(label: Text('BAL. RECEIVE')),
-                    DataColumn(label: Text('RECEIVABLE')),
                   ],
                   rows: items.map((e) {
                     return DataRow(
@@ -341,9 +413,9 @@ class _ReceivablesTable extends StatelessWidget {
                         DataCell(SizedBox(width: 180.w, child: Text(e.name, overflow: TextOverflow.ellipsis))),
                         DataCell(Text(_fmt(e.debit))),
                         DataCell(Text(_fmt(e.credit))),
+                        DataCell(Text(_fmt(e.receivable))),
                         DataCell(Text(_fmt(e.payout))),
                         DataCell(Text(_fmt(e.balanceReceive))),
-                        DataCell(Text(_fmt(e.receivable))),
                       ],
                     );
                   }).toList(),

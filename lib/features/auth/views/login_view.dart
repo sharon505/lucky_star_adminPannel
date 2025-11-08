@@ -140,11 +140,10 @@ class _LoginViewState extends State<LoginView> {
 
   Widget _text({String? text}) {
     return Text(
-      text ?? 'Sign in to Lucky Star Admin',
+      text ?? 'Sign into\nLucky Star Admin',
       style: AppTypography.heading1.copyWith(
         color: AppTheme.background,
         fontSize: 30.sp,
-        height: 1.2,
       ),
       textAlign: TextAlign.center,
     );

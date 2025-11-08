@@ -13,39 +13,39 @@ class ProfitLossViewModel with ChangeNotifier {
   // ---- State ----
   bool _loading = false;
   String? _error;
-  List<ProfitLossRow> _rows = [];
+  List<ProfitLossRow> _rows = const [];
 
   // ---- Last-used filter ----
-  DateTime? _date; // last requested date
+  DateTime? _date; // last requested date (date-only)
 
   // ---- Getters ----
   bool get isLoading => _loading;
   String? get error => _error;
   List<ProfitLossRow> get items => _rows;
   DateTime? get date => _date;
+  bool get hasData => _rows.isNotEmpty && _error == null;
 
   // ---- Derived totals (using description keys from API) ----
-  double get totalIncome => _byDesc('TOTAL INCOME');
+  double get totalIncome   => _byDesc('TOTAL INCOME');
   double get totalExpenses => _byDesc('TOTAL EXPENSES');
-  double get netProfit => _byDesc('NET PROFIT');
+  double get netProfit     => _byDesc('NET PROFIT');
 
-  // Fallback sums if backend doesn’t send those rows:
+  /// Sum of all amounts (in case backend doesn't send total rows)
   double get sumAll => _rows.fold(0.0, (s, e) => s + e.amount);
 
   // ---- Actions ----
   Future<void> loadByDate({required DateTime date}) async {
-    _loading = true;
-    _error = null;
-    notifyListeners();
+    // normalize to date-only
+    final d = DateTime(date.year, date.month, date.day);
 
+    _set(loading: true, error: null);
     try {
-      _date = date;
+      _date = d;
 
-      final res = await _service.fetchByDate(date: date);
+      final res = await _service.fetchByDate(date: d);
       final data = [...res.result];
 
-      // Optional presentation order:
-      // income group, expenses group, then total rows
+      // Optional: presentation order
       int rank(String d) {
         final s = d.trim().toUpperCase();
         if (s == 'INCOME' || s.contains('AGENT RECEIVABLE') || s.contains('AGENT COLLECTION')) return 0;
@@ -53,57 +53,80 @@ class ProfitLossViewModel with ChangeNotifier {
         if (s.contains('PRIZE') || s.contains('INCENTIVE')) return 2; // expenses group
         if (s == 'TOTAL EXPENSES') return 3;
         if (s == 'NET PROFIT') return 4;
-        return 5; // misc/end
+        return 5;
       }
 
       data.sort((a, b) {
         final r = rank(a.description).compareTo(rank(b.description));
-        if (r != 0) return r;
-        return a.description.toLowerCase().compareTo(b.description.toLowerCase());
+        return r != 0
+            ? r
+            : a.description.toLowerCase().compareTo(b.description.toLowerCase());
       });
 
       _rows = data;
+      if (_rows.isEmpty) {
+        _set(error: 'No records found.');
+      } else {
+        notifyListeners();
+      }
     } catch (e) {
-      _rows = [];
-      _error = e.toString();
+      _rows = const [];
+      _set(error: 'Failed to load Profit & Loss: $e');
     } finally {
-      _loading = false;
-      notifyListeners();
+      _set(loading: false);
     }
   }
 
   /// Re-run the last successful query
   Future<void> refresh() async {
     if (_date == null) {
-      _error = 'Pick a date first.';
-      notifyListeners();
+      _set(error: 'Pick a date first.');
       return;
     }
     await loadByDate(date: _date!);
   }
 
-  /// Convenience: load with today’s date
+  /// Optional helper to just change the date (without fetching)
+  void setDate(DateTime d) {
+    _date = DateTime(d.year, d.month, d.day);
+    notifyListeners();
+  }
+
+  /// Convenience: load with today’s date (if you want an auto fetch)
   Future<void> autoBootstrap() async {
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    await loadByDate(date: today);
+    await loadByDate(date: DateTime(now.year, now.month, now.day));
   }
 
   // ---- Helpers ----
   double _byDesc(String key) {
+    final k = key.toUpperCase();
     final r = _rows.firstWhere(
-          (e) => e.description.trim().toUpperCase() == key.toUpperCase(),
+          (e) => e.description.trim().toUpperCase() == k,
       orElse: () => const ProfitLossRow(description: '', amount: 0.0),
     );
     return r.amount;
   }
 
   void clear() {
-    _rows = [];
+    _rows = const [];
     _error = null;
     _loading = false;
     _date = null;
     notifyListeners();
+  }
+
+  void _set({bool? loading, String? error}) {
+    var shouldNotify = false;
+    if (loading != null && _loading != loading) {
+      _loading = loading;
+      shouldNotify = true;
+    }
+    if (error != _error) {
+      _error = error;
+      shouldNotify = true;
+    }
+    if (shouldNotify) notifyListeners();
   }
 
   @override

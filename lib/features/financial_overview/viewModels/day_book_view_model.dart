@@ -1,19 +1,19 @@
-// lib/features/reports/viewModels/cash_book_view_model.dart
+// lib/features/reports/viewModels/day_book_view_model.dart
 import 'package:flutter/foundation.dart';
 
-import '../models/cash_book_model.dart';
-import '../services/cash_book_service.dart';
+import '../models/day_book_models.dart';
+import '../services/day_book_service.dart';
 
-class CashBookViewModel with ChangeNotifier {
-  final CashBookService _service;
+class DayBookViewModel with ChangeNotifier {
+  final DayBookService _service;
 
-  CashBookViewModel({CashBookService? service})
-      : _service = service ?? CashBookService();
+  DayBookViewModel({DayBookService? service})
+      : _service = service ?? DayBookService();
 
   // ---- State ----
   bool _isLoading = false;
   String? _error;
-  List<DayBookEntry> _items = [];
+  List<DayBookItem> _items = [];
 
   // ---- Current filter ----
   DateTime? _date;
@@ -21,7 +21,7 @@ class CashBookViewModel with ChangeNotifier {
   // ---- Getters ----
   bool get isLoading => _isLoading;
   String? get error => _error;
-  List<DayBookEntry> get items => _items;
+  List<DayBookItem> get items => _items;
   DateTime? get date => _date;
 
   double get totalDebit =>
@@ -32,16 +32,6 @@ class CashBookViewModel with ChangeNotifier {
 
   double get net => totalDebit - totalCredit;
 
-  /// Optional helpers if you need them:
-  DayBookEntry? get openingBalance => _items.firstWhere(
-        (e) => e.particulars.trim().toUpperCase() == 'OPENING BALANCE',
-    orElse: () => null as DayBookEntry,
-  );
-  DayBookEntry? get closingBalance => _items.firstWhere(
-        (e) => e.particulars.trim().toUpperCase() == 'CLOSING BALANCE',
-    orElse: () => null as DayBookEntry,
-  );
-
   // ---- Actions ----
   Future<void> fetch({required DateTime date}) async {
     _isLoading = true;
@@ -51,11 +41,17 @@ class CashBookViewModel with ChangeNotifier {
     try {
       _date = DateTime(date.year, date.month, date.day);
 
-      final resp = await _service.fetchByDateStr(date: _fmtDate(_date!));
-      _items = resp.items; // keep server order
+      final data = await _service.fetch(date: _date!);
 
-      // Example: sort if you prefer
-      // _items.sort((a, b) => a.particulars.toLowerCase().compareTo(b.particulars.toLowerCase()));
+      // Keep server order, or sort by time/description if needed.
+      // Example sort: by description ASC, then debit DESC
+      // data.sort((a, b) {
+      //   final byDesc = a.description.toLowerCase().compareTo(b.description.toLowerCase());
+      //   if (byDesc != 0) return byDesc;
+      //   return b.debit.compareTo(a.debit);
+      // });
+
+      _items = data;
     } catch (e) {
       _items = [];
       _error = e.toString();
@@ -74,7 +70,7 @@ class CashBookViewModel with ChangeNotifier {
     await fetch(date: _date!);
   }
 
-  /// Convenience: load today's cash book.
+  /// Convenience: load today's day-book.
   Future<void> autoBootstrap() async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -87,11 +83,6 @@ class CashBookViewModel with ChangeNotifier {
     if (fetchNow) {
       fetch(date: _date!);
     }
-  }
-
-  String _fmtDate(DateTime d) {
-    String two(int n) => n < 10 ? '0$n' : '$n';
-    return '${d.year}-${two(d.month)}-${two(d.day)}';
   }
 
   @override

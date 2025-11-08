@@ -1,3 +1,4 @@
+// lib/features/financial_overview/views/get_cash_book.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -6,22 +7,20 @@ import 'package:lucky_star_admin/core/theme/color_scheme.dart';
 import '../../../core/constants/app_appbar.dart';
 import '../../../core/constants/app_floatAction.dart';
 
-import '../../reports/models/distributor_models.dart';
-import '../../reports/viewModels/distributor_view_model.dart';
-import '../viewModels/cash_book_view_model.dart';
 import '../models/cash_book_model.dart';
+import '../viewModels/cash_book_view_model.dart';
 
 class GetCashBook extends StatelessWidget {
   const GetCashBook({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return _CashBookScaffold();
+    return const _CashBookScaffold();
   }
 }
 
 class _CashBookScaffold extends StatefulWidget {
-  const _CashBookScaffold();
+  const _CashBookScaffold({super.key});
 
   @override
   State<_CashBookScaffold> createState() => _CashBookScaffoldState();
@@ -38,23 +37,10 @@ class _CashBookScaffoldState extends State<_CashBookScaffold> {
 
   Future<void> _bootstrap() async {
     if (_bootstrapped) return;
-    final avm = context.read<DistributorViewModel>();
-    final vm  = context.read<CashBookViewModel>();
-
-    // Wait briefly for agent list to load
-    for (int i = 0; i < 20; i++) {
-      await Future.delayed(const Duration(milliseconds: 120));
-      final ok = !avm.isLoading && avm.error == null && avm.filteredItems.isNotEmpty;
-      if (ok) break;
-    }
+    final vm = context.read<CashBookViewModel>();
+    await vm.autoBootstrap(); // loads today's cash book
     if (!mounted) return;
-
-    if (avm.filteredItems.isNotEmpty) {
-      final firstAgentId = avm.filteredItems.first.distributorId;
-      await vm.autoBootstrap(agentId: firstAgentId);
-    }
-
-    if (mounted) setState(() => _bootstrapped = true);
+    setState(() => _bootstrapped = true);
   }
 
   @override
@@ -68,30 +54,27 @@ class _CashBookScaffoldState extends State<_CashBookScaffold> {
       body: Padding(
         padding: EdgeInsets.all(12.w),
         child: _CashBookContent(
-          isLoading: vm.loading || !_bootstrapped,
+          isLoading: vm.isLoading || !_bootstrapped,
           error: vm.error,
-          rows: vm.rows,
+          rows: vm.items, // List<DayBookEntry>
           totalDebit: vm.totalDebit,
           totalCredit: vm.totalCredit,
+          date: vm.date,
         ),
       ),
     );
   }
 }
 
-/// ---------------- Filter Dialog (Agent only) ----------------
+/// ---------------- Filter Dialog (Date) ----------------
 Future<void> _openFilterDialog(BuildContext context) async {
   final vm = context.read<CashBookViewModel>();
-  final agentVm = context.read<DistributorViewModel>();
-
-  int? selAgentId;
+  DateTime date = vm.date ?? DateTime.now();
 
   await showDialog(
     context: context,
     barrierDismissible: false,
     builder: (ctx) {
-      final formKey = GlobalKey<FormState>();
-
       return AlertDialog(
         backgroundColor: AppTheme.adminGreenDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
@@ -99,57 +82,40 @@ Future<void> _openFilterDialog(BuildContext context) async {
           'Filter — Cash Book',
           style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
         ),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Consumer<DistributorViewModel>(
-                  builder: (_, avm, __) {
-                    if (avm.isLoading) {
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 12.h),
-                        child: const LinearProgressIndicator(color: AppTheme.adminGreen),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _DateField(
+                label: 'Date',
+                date: date,
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: date,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                    barrierDismissible: false,
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: const ColorScheme.dark(
+                            primary: AppTheme.adminGreen,
+                            surface: AppTheme.adminGreenDark,
+                            onSurface: AppTheme.adminWhite,
+                          ),
+                          dialogBackgroundColor: AppTheme.adminGreenDark,
+                        ),
+                        child: child!,
                       );
-                    }
-                    if (avm.error != null) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(avm.error!, style: const TextStyle(color: Colors.redAccent)),
-                          SizedBox(height: 8.h),
-                          OutlinedButton(onPressed: () => avm.load(), child: const Text('Retry')),
-                        ],
-                      );
-                    }
-
-                    final Map<int, DistributorItem> uniq = {
-                      for (final a in avm.filteredItems) a.distributorId: a
-                    };
-                    final items = uniq.values.toList()
-                      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-
-                    selAgentId ??= items.isNotEmpty ? items.first.distributorId : null;
-
-                    return DropdownButtonFormField<int>(
-                      value: selAgentId,
-                      items: items
-                          .map((a) => DropdownMenuItem<int>(
-                        value: a.distributorId,
-                        child: Text(a.name, overflow: TextOverflow.ellipsis),
-                      ))
-                          .toList(),
-                      onChanged: (v) => selAgentId = v,
-                      validator: (v) => v == null ? 'Select an agent' : null,
-                      decoration: _inputDeco('Agent'),
-                      dropdownColor: AppTheme.adminGreenDark,
-                      style: const TextStyle(color: AppTheme.adminWhite),
-                    );
-                  },
-                ),
-              ],
-            ),
+                    },
+                  );
+                  if (picked != null) {
+                    date = DateTime(picked.year, picked.month, picked.day);
+                  }
+                },
+              ),
+            ],
           ),
         ),
         actions: [
@@ -164,9 +130,7 @@ Future<void> _openFilterDialog(BuildContext context) async {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
             ),
             onPressed: () async {
-              if (!formKey.currentState!.validate()) return;
-              if (selAgentId == null) return;
-              await vm.load(agentId: '$selAgentId');
+              await vm.fetch(date: date);
               if (ctx.mounted) Navigator.pop(ctx);
             },
             child: const Text('SUBMIT'),
@@ -175,6 +139,43 @@ Future<void> _openFilterDialog(BuildContext context) async {
       );
     },
   );
+}
+
+class _DateField extends StatelessWidget {
+  final String label;
+  final DateTime date;
+  final VoidCallback onTap;
+
+  const _DateField({required this.label, required this.date, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    String two(int n) => n < 10 ? '0$n' : '$n';
+    final txt = '${two(date.day)}/${two(date.month)}/${date.year}';
+    return InkWell(
+      borderRadius: BorderRadius.circular(12.r),
+      onTap: onTap,
+      child: InputDecorator(
+        decoration: _inputDeco(label),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.calendar_today_rounded, size: 16, color: AppTheme.adminGreen),
+            SizedBox(width: 6.w),
+            Flexible(
+              child: Text(
+                txt,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: AppTheme.adminWhite),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 InputDecoration _inputDeco(String label) {
@@ -202,16 +203,19 @@ enum _ViewMode { table, tiles }
 class _CashBookContent extends StatefulWidget {
   final bool isLoading;
   final String? error;
-  final List<CashBookRow> rows;
+  final List<DayBookEntry> rows;
   final double totalDebit;
   final double totalCredit;
+  final DateTime? date;
 
   const _CashBookContent({
+    super.key,
     required this.isLoading,
     required this.error,
     required this.rows,
     required this.totalDebit,
     required this.totalCredit,
+    required this.date,
   });
 
   @override
@@ -255,6 +259,11 @@ class _CashBookContentState extends State<_CashBookContent> {
       );
     }
 
+    String two(int n) => n < 10 ? '0$n' : '$n';
+    final dateStr = widget.date != null
+        ? '${two(widget.date!.day)}/${two(widget.date!.month)}/${widget.date!.year}'
+        : '';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -269,12 +278,17 @@ class _CashBookContentState extends State<_CashBookContent> {
                   runSpacing: 6.h,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
+                    if (dateStr.isNotEmpty)
+                      Text(
+                        'Date: $dateStr',
+                        style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
+                      ),
                     Text(
                       'Rows: ${widget.rows.length}',
                       style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
                     ),
                     Text(
-                      'Total Debit: ${widget.totalDebit.toStringAsFixed(2)}',
+                      'Cash Balance: ${widget.totalDebit.toStringAsFixed(2)}',
                       style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
                     ),
                     Text(
@@ -317,7 +331,11 @@ class _CashBookContentState extends State<_CashBookContent> {
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: _mode == _ViewMode.table
-                ? _CashBookTable(items: widget.rows, totalDebit: widget.totalDebit, totalCredit: widget.totalCredit)
+                ? _CashBookTable(
+              items: widget.rows,
+              totalDebit: widget.totalDebit,
+              totalCredit: widget.totalCredit,
+            )
                 : _CashBookTiles(items: widget.rows),
           ),
         ),
@@ -371,7 +389,7 @@ class _ViewChip extends StatelessWidget {
 
 /// ---------------- Table view ----------------
 class _CashBookTable extends StatelessWidget {
-  final List<CashBookRow> items;
+  final List<DayBookEntry> items;
   final double totalDebit;
   final double totalCredit;
 
@@ -406,14 +424,22 @@ class _CashBookTable extends StatelessWidget {
               fontSize: 12.sp,
             ),
             columns: const [
-              DataColumn(label: Text('DESCR')),
+              DataColumn(label: Text('PARTICULARS')),
+              DataColumn(label: Text('VOUCHER')),
               DataColumn(label: Text('DEBIT')),
               DataColumn(label: Text('CREDIT')),
             ],
             rows: [
               ...items.map((e) => DataRow(
                 cells: [
-                  DataCell(SizedBox(width: 225.w, child: Text(e.descr, overflow: TextOverflow.ellipsis))),
+                  DataCell(SizedBox(
+                    width: 240.w,
+                    child: Text(e.particulars, overflow: TextOverflow.ellipsis),
+                  )),
+                  DataCell(SizedBox(
+                    width: 90.w,
+                    child: Text(e.voucherNo, overflow: TextOverflow.ellipsis),
+                  )),
                   DataCell(Text(e.debit.toStringAsFixed(2))),
                   DataCell(Text(e.credit.toStringAsFixed(2))),
                 ],
@@ -423,8 +449,15 @@ class _CashBookTable extends StatelessWidget {
                 color: WidgetStatePropertyAll(AppTheme.adminWhite.withOpacity(.06)),
                 cells: [
                   const DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.w800))),
-                  DataCell(Text(totalDebit.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.w800))),
-                  DataCell(Text(totalCredit.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.w800))),
+                  const DataCell(Text('—', style: TextStyle(fontWeight: FontWeight.w800))),
+                  DataCell(Text(
+                    totalDebit.toStringAsFixed(2),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  )),
+                  DataCell(Text(
+                    totalCredit.toStringAsFixed(2),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  )),
                 ],
               ),
             ],
@@ -437,7 +470,7 @@ class _CashBookTable extends StatelessWidget {
 
 /// ---------------- Tile view ----------------
 class _CashBookTiles extends StatelessWidget {
-  final List<CashBookRow> items;
+  final List<DayBookEntry> items;
   const _CashBookTiles({required this.items});
 
   @override
@@ -452,7 +485,7 @@ class _CashBookTiles extends StatelessWidget {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 10.w,
         mainAxisSpacing: 10.h,
-        childAspectRatio: 1.9,
+        childAspectRatio: 1.95,
       ),
       itemCount: items.length,
       itemBuilder: (_, i) {
@@ -468,7 +501,7 @@ class _CashBookTiles extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                e.descr,
+                e.particulars,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -477,6 +510,18 @@ class _CashBookTiles extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              SizedBox(height: 6.h),
+              if (e.voucherNo.trim().isNotEmpty)
+                Text(
+                  'Voucher: ${e.voucherNo}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppTheme.adminWhite.withOpacity(.75),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               SizedBox(height: 8.h),
               Row(
                 children: [

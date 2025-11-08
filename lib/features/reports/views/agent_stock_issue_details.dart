@@ -22,8 +22,77 @@ class AgentStockIssueDetails extends StatelessWidget {
   }
 }
 
-class _AgentIssueScaffold extends StatelessWidget {
+class _AgentIssueScaffold extends StatefulWidget {
   const _AgentIssueScaffold();
+
+  @override
+  State<_AgentIssueScaffold> createState() => _AgentIssueScaffoldState();
+}
+
+class _AgentIssueScaffoldState extends State<_AgentIssueScaffold> {
+  bool _bootstrapped = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap(context));
+  }
+
+  Future<void> _bootstrap(BuildContext context) async {
+    if (_bootstrapped) return;
+
+    final productVm = context.read<ProductViewModel>();
+    final distVm    = context.read<DistributorViewModel>();
+    final issueVm   = context.read<AgentStockIssueViewModel>();
+
+    // Wait briefly for Product & Distributor lists to load
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (
+    (productVm.isLoading || distVm.isLoading) &&
+        DateTime.now().isBefore(deadline)
+    ) {
+      await Future.delayed(const Duration(milliseconds: 120));
+    }
+
+    // Prefer filteredItems; if empty, fall back to raw items
+    List<ProductItem> products = productVm.filteredItems.isNotEmpty
+        ? productVm.filteredItems
+        : productVm.items;
+
+    List<DistributorItem> dists = distVm.filteredItems.isNotEmpty
+        ? distVm.filteredItems
+        : distVm.items;
+
+    if (products.isEmpty || dists.isEmpty) {
+      // Keep UI usable; user can open filter dialog to retry
+      if (mounted) setState(() => _bootstrapped = true);
+      return;
+    }
+
+    // Use any previously-chosen IDs in VM, else default to first available
+// Prefer previously chosen IDs in VM (when non-null and non-zero), else fallback
+    final int productId = (issueVm.productId != null && issueVm.productId != 0)
+        ? issueVm.productId!
+        : (productVm.selected?.productId ?? products.first.productId);
+
+    final int distributorId = (issueVm.distributorId != null && issueVm.distributorId != 0)
+        ? issueVm.distributorId!
+        : (distVm.selected?.distributorId ?? dists.first.distributorId);
+
+
+    // Dates already live in the VM (defaults handled there)
+    final DateTime from = issueVm.dateFrom;
+    final DateTime to   = issueVm.dateTo;
+
+    await issueVm.fetch(
+      dateFrom: from,
+      dateTo: to,
+      productId: productId,
+      distributorId: distributorId,
+    );
+
+    if (mounted) setState(() => _bootstrapped = true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +108,8 @@ class _AgentIssueScaffold extends StatelessWidget {
         padding: EdgeInsets.all(12.w),
         child: _IssueContent(
           items: vm.filteredItems,
-          isLoading: vm.isLoading,
+          // Show spinner while bootstrapping so first paint has feedback
+          isLoading: vm.isLoading || !_bootstrapped,
           error: vm.error,
           dateFrom: vm.dateFrom,
           dateTo: vm.dateTo,
@@ -49,6 +119,7 @@ class _AgentIssueScaffold extends StatelessWidget {
     );
   }
 }
+
 
 /// ---------------- Filter Dialog ----------------
 

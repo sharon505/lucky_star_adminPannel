@@ -1,67 +1,79 @@
-// lib/features/reports/models/cash_book_model.dart
-
+// lib/features/reports/models/day_book_model.dart
 import 'dart:convert';
 
-class CashBookResponse {
-  final List<CashBookRow> result;
+/// Top-level response: { "Result": [ ...entries ] }
+class DayBookResponse {
+  final List<DayBookEntry> items;
 
-  CashBookResponse({required this.result});
+  DayBookResponse({required this.items});
 
-  factory CashBookResponse.fromJson(Map<String, dynamic> json) {
-    final list = (json['Result'] as List<dynamic>? ?? [])
-        .map((e) => CashBookRow.fromJson(e as Map<String, dynamic>))
+  factory DayBookResponse.fromJson(Map<String, dynamic> json) {
+    final list = (json['Result'] as List? ?? [])
+        .map((e) => DayBookEntry.fromJson(e as Map<String, dynamic>))
         .toList();
-    return CashBookResponse(result: list);
+    return DayBookResponse(items: list);
   }
 
   Map<String, dynamic> toJson() => {
-    'Result': result.map((e) => e.toJson()).toList(),
+    'Result': items.map((e) => e.toJson()).toList(),
   };
 
-  /// Parse from raw json string
-  factory CashBookResponse.fromRawJson(String str) =>
-      CashBookResponse.fromJson(jsonDecode(str) as Map<String, dynamic>);
+  /// Helpers if you receive a raw string body.
+  factory DayBookResponse.fromJsonStr(String source) =>
+      DayBookResponse.fromJson(jsonDecode(source) as Map<String, dynamic>);
 
-  /// Encode to raw json string
-  String toRawJson() => jsonEncode(toJson());
+  String toJsonStr() => jsonEncode(toJson());
 }
 
-class CashBookRow {
-  final String descr;   // "OPENING BAL", "CLOSING BAL", etc.
-  final double debit;   // 0.00
-  final double credit;  // 0.00
+/// A single row in the Result list.
+class DayBookEntry {
+  final String particulars;
+  final String voucherNo;
+  final double debit;
+  final double credit;
 
-  const CashBookRow({
-    required this.descr,
+  DayBookEntry({
+    required this.particulars,
+    required this.voucherNo,
     required this.debit,
     required this.credit,
   });
 
-  factory CashBookRow.fromJson(Map<String, dynamic> json) => CashBookRow(
-    descr: (json['DESCR'] ?? '').toString(),
-    debit: _toDouble(json['DEBIT']),
-    credit: _toDouble(json['CREDIT']),
-  );
+  factory DayBookEntry.fromJson(Map<String, dynamic> json) {
+    return DayBookEntry(
+      particulars: (json['PARTICULARS'] ?? '').toString(),
+      voucherNo: (json['VOUCHER_NO'] ?? '').toString(),
+      debit: _asDouble(json['DEBIT']),
+      credit: _asDouble(json['CREDIT']),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-    'DESCR': descr,
+    'PARTICULARS': particulars,
+    'VOUCHER_NO': voucherNo,
     'DEBIT': debit,
     'CREDIT': credit,
   };
 
-  CashBookRow copyWith({
-    String? descr,
+  DayBookEntry copyWith({
+    String? particulars,
+    String? voucherNo,
     double? debit,
     double? credit,
   }) {
-    return CashBookRow(
-      descr: descr ?? this.descr,
+    return DayBookEntry(
+      particulars: particulars ?? this.particulars,
+      voucherNo: voucherNo ?? this.voucherNo,
       debit: debit ?? this.debit,
       credit: credit ?? this.credit,
     );
   }
 
-  static double _toDouble(dynamic v) {
+  @override
+  String toString() =>
+      'DayBookEntry(particulars: $particulars, voucherNo: $voucherNo, debit: $debit, credit: $credit)';
+
+  static double _asDouble(dynamic v) {
     if (v == null) return 0.0;
     if (v is num) return v.toDouble();
     final s = v.toString().trim();
