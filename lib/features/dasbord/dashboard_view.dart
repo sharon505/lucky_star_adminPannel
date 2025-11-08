@@ -6,6 +6,7 @@ import 'package:lucky_star_admin/features/reports/views/reports_view.dart';
 import '../../core/theme/color_scheme.dart';
 import '../../core/theme/text_styles.dart';
 import '../../shared/app_gradient_background.dart';
+import '../master_data/views/master_data_view.dart';
 
 List<_Model> list = [
   _Model(icon: Icons.bar_chart_outlined,
@@ -21,9 +22,7 @@ List<_Model> list = [
   _Model(
     icon: Icons.inventory_2_outlined,
     text: 'Master Data',
-    page: Center(
-      child: Text("settings"),
-    ),
+    page: MasterDataView(),
   ),
 ];
 
