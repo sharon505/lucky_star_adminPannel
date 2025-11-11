@@ -11,6 +11,7 @@ import 'features/auth/viewmodel/login_view_model.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/splash_view.dart';
 import 'features/dasbord/dashboard_view.dart';
+import 'features/financial_overview/viewModels/agent_receivables_view_model.dart';
 import 'features/financial_overview/viewModels/cash_book_view_model.dart';
 import 'features/financial_overview/viewModels/day_book_view_model.dart';
 import 'features/financial_overview/viewModels/expense_income_tracker_view_model.dart';
@@ -76,6 +77,7 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => DayBookViewModel()..autoBootstrap()),
   ChangeNotifierProvider(create: (_) => ProfitLossViewModel()..autoBootstrap()),
   ChangeNotifierProvider(create: (_) => ExpenseIncomeTrackerViewModel()),
+  ChangeNotifierProvider(create: (_) => AgentReceivablesViewModel()),
 ];
 
 //9567030890

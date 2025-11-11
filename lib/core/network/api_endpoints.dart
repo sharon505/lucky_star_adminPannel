@@ -41,6 +41,7 @@ class ApiEndpoints {
   // ---- Extra ----
   static final Uri getAgent                = _u('USP_GetDistributor_LIST');///finish
   static final Uri getProducts             = _u('USP_Getproducts'); ///finish
+  static final Uri agentReceivables        = _u('AgentReceivable'); ///finish
 
   // ---- Dash Bord ----
   static final Uri dashboard               = _u('GET_DASHBOARD'); ///finish
