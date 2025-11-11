@@ -7,6 +7,7 @@ import 'package:lucky_star_admin/core/theme/color_scheme.dart';
 import '../../../core/constants/app_appbar.dart';
 import '../../../core/constants/app_floatAction.dart';
 
+import '../../../core/theme/text_styles.dart';
 import '../viewModels/profit_loss_view_model.dart';
 import '../models/profit_loss_model.dart';
 
@@ -58,9 +59,12 @@ Future<void> _openFilterDialog(BuildContext context) async {
       return AlertDialog(
         backgroundColor: AppTheme.adminGreenDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: const Text(
-          'Filter — Profit & Loss',
-          style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
+        title:  Text(
+          'Profit & Loss',
+          style: AppTypography.heading1.copyWith(
+              fontSize: 17.sp,
+              color: AppTheme.adminGreen
+          ),
         ),
         content: SingleChildScrollView(
           child: Column(

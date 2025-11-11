@@ -7,6 +7,7 @@ import 'package:lucky_star_admin/core/theme/color_scheme.dart';
 import '../../../core/constants/app_appbar.dart';
 import '../../../core/constants/app_floatAction.dart';
 
+import '../../../core/theme/text_styles.dart';
 import '../viewModels/day_book_view_model.dart';
 import '../models/day_book_models.dart';
 
@@ -62,9 +63,12 @@ Future<void> _openDateDialog(BuildContext context) async {
       return AlertDialog(
         backgroundColor: AppTheme.adminGreenDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: const Text(
-          'Select Date — Day Book',
-          style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
+        title:  Text(
+          'Day Book',
+          style: AppTypography.heading1.copyWith(
+              fontSize: 17.sp,
+              color: AppTheme.adminGreen
+          ),
         ),
         content: SizedBox(
           width: 360.w,

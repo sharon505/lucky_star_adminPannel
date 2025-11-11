@@ -7,6 +7,7 @@ import 'package:lucky_star_admin/core/theme/color_scheme.dart';
 import '../../../core/constants/app_appbar.dart';
 import '../../../core/constants/app_floatAction.dart';
 
+import '../../../core/theme/text_styles.dart';
 import '../models/cash_book_model.dart';
 import '../viewModels/cash_book_view_model.dart';
 
@@ -78,9 +79,12 @@ Future<void> _openFilterDialog(BuildContext context) async {
       return AlertDialog(
         backgroundColor: AppTheme.adminGreenDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: const Text(
-          'Filter — Cash Book',
-          style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
+        title:  Text(
+          'Cash Book',
+          style: AppTypography.heading1.copyWith(
+              fontSize: 17.sp,
+              color: AppTheme.adminGreen
+          ),
         ),
         content: SingleChildScrollView(
           child: Column(

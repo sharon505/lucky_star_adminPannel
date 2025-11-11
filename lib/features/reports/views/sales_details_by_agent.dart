@@ -6,6 +6,7 @@ import 'package:lucky_star_admin/core/theme/color_scheme.dart';
 import '../../../core/constants/app_appbar.dart';
 import '../../../core/constants/app_floatAction.dart';
 
+import '../../../core/theme/text_styles.dart';
 import '../viewModels/sales_details_by_agent_view_model.dart';
 import '../viewModels/product_view_model.dart';
 import '../viewModels/distributor_view_model.dart';
@@ -148,9 +149,12 @@ Future<void> _openFilterDialog(BuildContext context) async {
           return AlertDialog(
             backgroundColor: AppTheme.adminGreenDark,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-            title: const Text(
+            title:  Text(
               'Sales Details',
-              style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
+                style: AppTypography.heading1.copyWith(
+                    fontSize: 17.sp,
+                    color: AppTheme.adminGreen
+                ),
             ),
             content: Form(
               key: formKey,
