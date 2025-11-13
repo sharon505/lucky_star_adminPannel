@@ -516,6 +516,16 @@ class _StockTableViewState extends State<_StockTableView> {
     super.dispose();
   }
 
+  // Optional: extra blank row at the end (includes gutter cell)
+  DataRow _blankRow() => const DataRow(cells: [
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(SizedBox(width: 32)), // gutter
+  ]);
+
   @override
   Widget build(BuildContext context) {
     final items = widget.items;
@@ -553,15 +563,18 @@ class _StockTableViewState extends State<_StockTableView> {
                     color: AppTheme.adminWhite,
                     fontSize: 12.sp,
                   ),
-                  columns: const [
-                    DataColumn(label: Text('PRODUCT')),
-                    DataColumn(label: Text('AGENT')),
-                    DataColumn(label: Text('ISSUED')),
-                    DataColumn(label: Text('SALE')),
-                    DataColumn(label: Text('BALANCE')),
+                  // remove const and add trailing blank header cell (gutter)
+                  columns: [
+                    const DataColumn(label: Text('PRODUCT')),
+                    const DataColumn(label: Text('AGENT')),
+                    const DataColumn(label: Text('ISSUED')),
+                    const DataColumn(label: Text('SALE')),
+                    const DataColumn(label: Text('BALANCE')),
+                    // --- trailing blank column (gutter)
+                    DataColumn(label: SizedBox(width: 32.w)),
                   ],
-                  rows: items.map((e) {
-                    return DataRow(cells: [
+                  rows: [
+                    ...items.map((e) => DataRow(cells: [
                       DataCell(SizedBox(
                         width: 130.w,
                         child: Text(e.productName, overflow: TextOverflow.ellipsis),
@@ -573,8 +586,11 @@ class _StockTableViewState extends State<_StockTableView> {
                       DataCell(Text(_int(e.issued))),
                       DataCell(Text(_int(e.sale))),
                       DataCell(Text(_int(e.balanceStock))),
-                    ]);
-                  }).toList(),
+                      // trailing gutter cell to match header
+                      DataCell(SizedBox(width: 32.w)),
+                    ])),
+                    _blankRow(), // ← uncomment if you also want a blank row at the end
+                  ],
                 ),
               ),
             ),
@@ -584,6 +600,7 @@ class _StockTableViewState extends State<_StockTableView> {
     );
   }
 }
+
 
 
 

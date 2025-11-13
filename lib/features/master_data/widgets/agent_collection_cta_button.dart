@@ -1,27 +1,60 @@
-import 'dart:ui';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/theme/color_scheme.dart';
 
-class AgentCollectionCTAButton extends StatelessWidget {
+class PrimaryCTAButton extends StatelessWidget {
   final VoidCallback? onTap;
+
+  /// Main title (bold)
   final String title;
+
+  /// Subtitle (small description)
   final String subtitle;
+
+  /// Small leading icon at the left
   final IconData leadingIcon;
+
+  /// Big faded icon in the background (optional)
+  final IconData? backgroundIcon;
+
+  /// Minimum height of the card
   final double? minHeight;
+
+  /// Inner padding
   final EdgeInsetsGeometry? contentPadding;
 
-  const AgentCollectionCTAButton({
+  /// Gradient background
+  final Gradient? gradient;
+
+  /// Border color
+  final Color? borderColor;
+
+  /// Shadow color
+  final Color? shadowColor;
+
+  /// Show / hide arrow on the right
+  final bool showArrow;
+
+  /// For accessibility (screen readers)
+  final String? semanticsLabel;
+  final String? semanticsHint;
+
+  const PrimaryCTAButton({
     super.key,
     this.onTap,
-    this.title = 'Get Collection',
-    this.subtitle = 'Products • Agent • Receivable • Collected',
-    this.leadingIcon = Icons.payments_outlined,
+    required this.title,
+    required this.subtitle,
+    required this.leadingIcon,
+    this.backgroundIcon,
     this.minHeight,
     this.contentPadding,
+    this.gradient,
+    this.borderColor,
+    this.shadowColor,
+    this.showArrow = true,
+    this.semanticsLabel,
+    this.semanticsHint,
   });
 
   @override
@@ -29,10 +62,20 @@ class AgentCollectionCTAButton extends StatelessWidget {
     final _minH = minHeight ?? 110.h;
     final _pad  = contentPadding ?? EdgeInsets.all(18.w);
 
+    final Gradient effectiveGradient = gradient ??
+        const LinearGradient(
+          colors: [AppTheme.adminGreenLite, AppTheme.adminGreenDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+
+    final Color effectiveBorder = borderColor ?? AppTheme.adminGreenDarker;
+    final Color effectiveShadow = shadowColor ?? AppTheme.adminGreenDark.withOpacity(.35);
+
     return Semantics(
       button: true,
-      label: title,
-      hint: 'Opens agent collection',
+      label: semanticsLabel ?? title,
+      hint: semanticsHint ?? 'Opens $title',
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(20.r),
@@ -44,34 +87,31 @@ class AgentCollectionCTAButton extends StatelessWidget {
           child: Ink(
             padding: _pad,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.adminGreenLite, AppTheme.adminGreenDark],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: effectiveGradient,
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.adminGreenDark.withOpacity(.35),
+                  color: effectiveShadow,
                   offset: const Offset(0, 8),
                   blurRadius: 18,
                 ),
               ],
-              border: Border.all(color: AppTheme.adminGreenDarker),
+              border: Border.all(color: effectiveBorder),
             ),
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: _minH),
               child: Stack(
                 children: [
-                  Positioned(
-                    right: -20.w,
-                    top: -20.h,
-                    child: Icon(
-                      Icons.payments_rounded,
-                      size: 120.sp,
-                      color: AppTheme.adminWhite.withOpacity(.08),
+                  if (backgroundIcon != null)
+                    Positioned(
+                      right: -20.w,
+                      top: -20.h,
+                      child: Icon(
+                        backgroundIcon,
+                        size: 120.sp,
+                        color: AppTheme.adminWhite.withOpacity(.08),
+                      ),
                     ),
-                  ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -80,9 +120,13 @@ class AgentCollectionCTAButton extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: AppTheme.adminWhite.withOpacity(.10),
                           borderRadius: BorderRadius.circular(14.r),
-                          border: Border.all(color: AppTheme.adminGreenDarker),
+                          border: Border.all(color: effectiveBorder),
                         ),
-                        child: Icon(leadingIcon, color: AppTheme.adminWhite, size: 22.sp),
+                        child: Icon(
+                          leadingIcon,
+                          color: AppTheme.adminWhite,
+                          size: 22.sp,
+                        ),
                       ),
                       SizedBox(width: 14.w),
                       Expanded(
@@ -116,7 +160,12 @@ class AgentCollectionCTAButton extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 10.w),
-                      Icon(Icons.arrow_forward_ios_rounded, size: 18.sp, color: AppTheme.adminWhite.withOpacity(.9)),
+                      if (showArrow)
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 18.sp,
+                          color: AppTheme.adminWhite.withOpacity(.9),
+                        ),
                     ],
                   ),
                 ],

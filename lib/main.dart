@@ -8,9 +8,12 @@ import 'package:provider/single_child_widget.dart';
 
 import 'features/auth/viewmodel/LoginFormProvider_viewModel.dart';
 import 'features/auth/viewmodel/login_view_model.dart';
+
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/splash_view.dart';
 import 'features/dasbord/dashboard_view.dart';
+
+import 'features/financial_overview/viewModels/agent_collection_view_model.dart';
 import 'features/financial_overview/viewModels/agent_receivables_view_model.dart';
 import 'features/financial_overview/viewModels/cash_book_view_model.dart';
 import 'features/financial_overview/viewModels/day_book_view_model.dart';
@@ -20,7 +23,9 @@ import 'features/financial_overview/views/day_book.dart';
 import 'features/financial_overview/views/expense_Income_tracker.dart';
 import 'features/financial_overview/views/get_cash_book.dart';
 import 'features/financial_overview/views/profit_and_loss_statement.dart';
+
 import 'features/home/home_page.dart';
+
 import 'features/reports/viewModels/agent_stock_issue_view_model.dart';
 import 'features/reports/viewModels/cash_collection_by_agent_view_model.dart';
 import 'features/reports/viewModels/cash_receivables_view_model.dart';
@@ -78,27 +83,28 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => ProfitLossViewModel()..autoBootstrap()),
   ChangeNotifierProvider(create: (_) => ExpenseIncomeTrackerViewModel()),
   ChangeNotifierProvider(create: (_) => AgentReceivablesViewModel()),
+  ChangeNotifierProvider(create: (_) => AgentCollectionViewModel()),
 ];
 
 //9567030890
 
 Map<String, Widget Function(BuildContext)> routes = <String, WidgetBuilder>{
-  'LoginView': (context) => const LoginView(),
-  'HomePage':  (context) => const HomePage(),
-  'DashboardView':  (context) => const DashboardView(),
+  'LoginView':                (context) => const LoginView(),
+  'HomePage':                 (context) => const HomePage(),
+  'DashboardView':            (context) => const DashboardView(),
   ///reports
-  'StockReportView':  (context) => const StockReportView(),
-  'AgentStockIssueDetails':  (context) => const AgentStockIssueDetails(),
-  'CurrentStockByAgent':  (context) => const CurrentStockByAgent(),
+  'StockReportView':          (context) => const StockReportView(),
+  'AgentStockIssueDetails':   (context) => const AgentStockIssueDetails(),
+  'CurrentStockByAgent':      (context) => const CurrentStockByAgent(),
   ///sales
-  'CashCollectionByAgent':  (context) => const CashCollectionByAgent(),
-  'CashReceivablesByAgent':  (context) => const CashReceivablesByAgent(),
-  'SalesDetailsByAgent':  (context) => const SalesDetailsByAgent(),
+  'CashCollectionByAgent':    (context) => const CashCollectionByAgent(),
+  'CashReceivablesByAgent':   (context) => const CashReceivablesByAgent(),
+  'SalesDetailsByAgent':      (context) => const SalesDetailsByAgent(),
   ///Financial
-  'GetCashBook':  (context) => const GetCashBook(),
-  'DayBook':  (context) => const DayBook(),
-  'ProfitAndLossStatement':  (context) => const ProfitAndLossStatement(),
-  'ExpenseIncomeTracker':  (context) => const ExpenseIncomeTracker(),
+  'GetCashBook':              (context) => const GetCashBook(),
+  'DayBook':                  (context) => const DayBook(),
+  'ProfitAndLossStatement':   (context) => const ProfitAndLossStatement(),
+  'ExpenseIncomeTracker':     (context) => const ExpenseIncomeTracker(),
 };
 
 class MyApp extends StatelessWidget {

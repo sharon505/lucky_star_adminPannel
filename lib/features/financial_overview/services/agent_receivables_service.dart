@@ -1,4 +1,3 @@
-// lib/features/reports/services/agent_receivables_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -14,31 +13,27 @@ class AgentReceivablesService {
     this.timeout = const Duration(seconds: 30),
   }) : _client = client ?? http.Client();
 
-  /// POST: Agent receivable for a given agent + product.
-  /// Body:
-  ///   agentId:  1
-  ///   productId:1
   Future<AgentReceivablesResponse> fetch({
     required int agentId,
     required int productId,
   }) async {
     final res = await _client
         .post(
-      ApiEndpoints.agentReceivables, // static final Uri agentReceivables = _u('AgentReceivable');
-      headers: ApiEndpoints.formHeaders,
-      body: {
-        'agentId': agentId.toString(),
-        'productId': productId.toString(),
-      },
-    )
-        .timeout(timeout);
+          ApiEndpoints.agentReceivables,
+          headers: ApiEndpoints.formHeaders,
+          body: {
+            'agentId': agentId.toString(),
+            'productId': productId.toString(),
+          },
+        ).timeout(timeout);
 
     if (res.statusCode != 200) {
-      throw Exception('AgentReceivable failed (${res.statusCode}): ${res.body}');
+      throw Exception(
+        'AgentReceivable failed (${res.statusCode}): ${res.body}',
+      );
     }
 
-    final Map<String, dynamic> decoded =
-    jsonDecode(res.body) as Map<String, dynamic>;
+    final Map<String, dynamic> decoded = jsonDecode(res.body) as Map<String, dynamic>;
     return AgentReceivablesResponse.fromMap(decoded);
   }
 

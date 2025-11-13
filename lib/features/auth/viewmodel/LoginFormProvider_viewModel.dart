@@ -4,13 +4,15 @@ class LoginFormProvider extends ChangeNotifier {
   // Controllers
   /// TODO: Hard-coded dev values. Remove before release.
   final TextEditingController usernameController = TextEditingController(
-    text: '1234',
+    text: 'admin',
+    // text: '1234',
     // text: "Jebelali1",
     // text: 'BP RZ01',
   );
 
   final TextEditingController passwordController = TextEditingController(
-    text: 'Pass@123',
+    text: 'admin@123',
+    // text: 'Pass@123',
     // text: 'ali1@123',
     // text: 'RZ01#123',
   );
@@ -19,10 +21,12 @@ class LoginFormProvider extends ChangeNotifier {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   bool _isPasswordVisible = false;
+
   bool get isPasswordVisible => _isPasswordVisible;
 
   // Convenient getters (non-breaking)
   String get username => usernameController.text.trim();
+
   String get password => passwordController.text;
 
   // Toggle Password Visibility
@@ -53,9 +57,7 @@ class LoginFormProvider extends ChangeNotifier {
   }
 
   // Check if form is valid
-  bool validateForm() {
-    return formKey.currentState?.validate() ?? false;
-  }
+  bool validateForm() => formKey.currentState?.validate() ?? false;
 
   // Clear fields
   void reset() {

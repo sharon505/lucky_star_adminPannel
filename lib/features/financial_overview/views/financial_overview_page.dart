@@ -6,11 +6,11 @@ import 'package:provider/provider.dart';
 
 import '../../reports/viewModels/distributor_view_model.dart';
 import '../../reports/viewModels/product_view_model.dart';
-import '../widget/agent_collection_tile.dart';
+import '../../master_data/widgets/agent_collection_tile.dart';
 import '../widget/amount_field.dart';
 import '../widget/date_field.dart';
 import '../widget/dropdown_field.dart';
-import '../widget/open_agent_collection_dialog.dart';
+import '../../master_data/widgets/open_agent_collection_dialog.dart';
 import '../widget/title_card.dart';
 
 typedef Tap = VoidCallback?;
@@ -26,10 +26,6 @@ class FinancialOverviewPage extends StatelessWidget {
         padding: AppPadding.allSmall,
         child: Column(
           children: [
-            AgentCollectionCTAButton(
-              onTap: () => openAgentCollectionDialog(context),
-              title: 'Agent Collection',
-            ),
             _financial(
               context,
               onTap: [

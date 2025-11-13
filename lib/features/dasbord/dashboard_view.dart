@@ -15,13 +15,12 @@ List<_Model> list = [
   ),
   _Model(
     icon: Icons.dashboard_outlined,
-    // text: 'financial overview',
     text: 'Financial',
     page: FinancialOverviewPage(),
   ),
   _Model(
-    icon: Icons.inventory_2_outlined,
-    text: 'Master Data',
+    icon: Icons.account_balance_wallet_outlined,
+    text: 'Transactions',
     page: MasterDataView(),
   ),
 ];

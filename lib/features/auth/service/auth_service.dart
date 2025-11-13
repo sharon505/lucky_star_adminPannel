@@ -12,7 +12,7 @@ class AuthService {
   AuthService({http.Client? client}) : _client = client ?? http.Client();
 
   Future<LoginResponse?> login(UserModel user) async {
-    final uri = ApiEndpoints.agentLogin; // if you switched to Uri const, use it directly
+    final uri = ApiEndpoints.adminLogin; // if you switched to Uri const, use it directly
     final headers = ApiEndpoints.formHeaders;
     final body = {
       'Username': user.usercode,

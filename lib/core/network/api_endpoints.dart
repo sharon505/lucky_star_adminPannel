@@ -1,4 +1,5 @@
 class ApiEndpoints {
+
   // ---- Base ----
   static const String _base = 'https://mobapp.dubailuckystar.com:29624/luckyWinner.asmx';
 
@@ -16,33 +17,36 @@ class ApiEndpoints {
   };
 
   // ---- App meta ----
-  static const String appVersion = '1.0.0+1';
+  static const String appVersion           = '1.0.3';
 
   // ---- Auth ----
-  static final Uri agentLogin = _u('Login');
+  // static final Uri agentLogin           = _u('Login');
+  static final Uri adminLogin              = _u('AdminLogin');                         //finish
 
   // ---- Reports ----
-  static final Uri ticketSearch            = _u('SP_PRIZE_DETAILS');///finish
+  static final Uri ticketSearch            = _u('SP_PRIZE_DETAILS');                   //finish
 
-  static final Uri stockReport             = _u('SP_StockReport');///finish
-  static final Uri agentStockIssueDetails  = _u('REPORT_STOCK_ISSUE_FOR_DISTRIBUTOR');///finish
-  static final Uri currentStockByAgent     = _u('REPORT_STOCK_BALANCE_OF_DISTRIBUTOR');///finish
+  static final Uri stockReport             = _u('SP_StockReport');                     //finish
+  static final Uri agentStockIssueDetails  = _u('REPORT_STOCK_ISSUE_FOR_DISTRIBUTOR'); //finish
+  static final Uri currentStockByAgent     = _u('REPORT_STOCK_BALANCE_OF_DISTRIBUTOR');//finish
 
-  static final Uri salesDetailsByAgent     = _u('REPORT_SALE_ENTRY');///finish
-  static final Uri cashReceivablesByAgent  = _u('REPORT_CASH_RECEIVABLE');///finish
-  static final Uri cashCollectionByAgent   = _u('REPORT_CASH_RECEIVED');///finish
+  static final Uri salesDetailsByAgent     = _u('REPORT_SALE_ENTRY');                  //finish
+  static final Uri cashReceivablesByAgent  = _u('REPORT_CASH_RECEIVABLE');             //finish
+  static final Uri cashCollectionByAgent   = _u('REPORT_CASH_RECEIVED');               //finish
 
   // ---- Financial overview ----
-  static final Uri cashBook                = _u('REPORT_CASH_BOOK');///finish
-  static final Uri dayBook                 = _u('sp_DaybookReport');///finish
-  static final Uri profitAndLossStatement  = _u('REPORT_PANDL');///finish
-  static final Uri expenseIncomeTracker    = _u('USP_GETJOURNALENTRYREPORT');///finish
+  static final Uri cashBook                = _u('REPORT_CASH_BOOK');                   //finish
+  static final Uri dayBook                 = _u('sp_DaybookReport');                   //finish
+  static final Uri profitAndLossStatement  = _u('REPORT_PANDL');                       //finish
+  static final Uri expenseIncomeTracker    = _u('USP_GETJOURNALENTRYREPORT');          //finish
+  static final Uri agentCollection         = _u('AgentCollection');                    //finish
 
   // ---- Extra ----
-  static final Uri getAgent                = _u('USP_GetDistributor_LIST');///finish
-  static final Uri getProducts             = _u('USP_Getproducts'); ///finish
-  static final Uri agentReceivables        = _u('AgentReceivable'); ///finish
+  static final Uri getAgent                = _u('USP_GetDistributor_LIST');            //finish
+  static final Uri getProducts             = _u('USP_Getproducts');                    //finish
+  static final Uri agentReceivables        = _u('AgentReceivable');                    //finish
 
   // ---- Dash Bord ----
-  static final Uri dashboard               = _u('GET_DASHBOARD'); ///finish
+  static final Uri dashboard               = _u('GET_DASHBOARD');                      //finish
+
 }

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../widgets/agent_collection_cta_button.dart'; // contains PrimaryCTAButton
+import '../widgets/open_agent_collection_dialog.dart';
 import '../../reports/viewModels/distributor_view_model.dart';
 import '../../reports/viewModels/product_view_model.dart';
 import 'product_master_page.dart';
 import 'agent_master_page.dart';
-
-import 'package:lucky_star_admin/core/constants/app_padding.dart';
 
 class MasterDataView extends StatefulWidget {
   const MasterDataView({super.key});
@@ -25,22 +25,31 @@ class _MasterDataViewState extends State<MasterDataView> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_bootstrapped) return;
       _bootstrapped = true;
+
       final products = context.read<ProductViewModel>();
       final agents   = context.read<DistributorViewModel>();
-      await Future.wait([products.load(), agents.load()]);
+
+      await Future.wait([
+        products.load(),
+        agents.load(),
+      ]);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final productCount = context.select<ProductViewModel, int>((vm) => vm.items.length);
-    final agentCount   = context.select<DistributorViewModel, int>((vm) => vm.items.length);
+    final productCount = context.select<ProductViewModel, int>(
+          (vm) => vm.items.length,
+    );
+    final agentCount = context.select<DistributorViewModel, int>(
+          (vm) => vm.items.length,
+    );
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Background
+          // Background gradient
           Positioned.fill(
             child: DecoratedBox(
               decoration: const BoxDecoration(
@@ -52,71 +61,117 @@ class _MasterDataViewState extends State<MasterDataView> {
               ),
             ),
           ),
+
           // Content
           SafeArea(
             child: Padding(
-              // If you want ScreenUtil-based padding, wrap your AppPadding or just use EdgeInsets.all(12.w)
               padding: EdgeInsets.all(12.w),
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final cols = constraints.maxWidth >= 1100
-                      ? 4
-                      : constraints.maxWidth >= 900
-                      ? 3
-                      : 2;
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 10.h,
                     children: [
-                      SizedBox(height: 4.h),
-                      Expanded(
-                        child: GridView.count(
-                          crossAxisCount: cols,
-                          mainAxisSpacing: 12.h,
-                          crossAxisSpacing: 12.w,
-                          childAspectRatio: 1.01,
-                          children: [
-                            _MasterTile(
-                              title: 'Products',
-                              subtitle: 'Create, edit & manage product catalog',
-                              icon: Icons.inventory_2_rounded,
-                              count: productCount,
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFF34D399), Color(0xFF10B981)],
-                              ),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const ProductMasterPage()),
-                              ),
-                              onLongPress: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Long-press actions coming soon')),
-                                );
-                              },
-                            ),
-                            _MasterTile(
-                              title: 'Agents',
-                              subtitle: 'Profiles, assignments & contact info',
-                              icon: Icons.badge_rounded,
-                              count: agentCount,
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFF60A5FA), Color(0xFF2563EB)],
-                              ),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const AgentMasterPage()),
-                              ),
-                              onLongPress: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Long-press actions coming soon')),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
+                      // Top CTA buttons (fixed, grid scrolls)
+                      PrimaryCTAButton(
+                        onTap: () => openAgentCollectionDialog(context),
+                        title: 'Agent Collection',
+                        subtitle: 'Day Book • Cash • Prizes • Adjustments',
+                        leadingIcon: Icons.payments_outlined,
+                        backgroundIcon: Icons.payments_rounded,
                       ),
+                      PrimaryCTAButton(
+                        onTap: () {
+                          // TODO: open location wise issuing page
+                          // openLocationWiseIssuing(context);
+                        },
+                        title: 'Location Wise Issuing',
+                        subtitle:
+                        'Branch • Location • Product • Issue Count',
+                        leadingIcon: Icons.location_on_outlined,
+                        backgroundIcon: Icons.location_city_rounded,
+                      ),
+                      PrimaryCTAButton(
+                        onTap: () {
+                          // TODO: open agent stock issue page
+                          // openAgentStockIssueDetails(context);
+                        },
+                        title: 'Agent Stock Issue',
+                        subtitle:
+                        'Product • Agent • Issue Date • Quantity',
+                        leadingIcon: Icons.inventory_2_outlined,
+                        backgroundIcon: Icons.local_shipping_rounded,
+                      ),
+                      // Grid is the ONLY scrollable in this screen
+                      // Expanded(
+                      //   child: GridView.count(
+                      //     physics: NeverScrollableScrollPhysics(),
+                      //     crossAxisCount: cols,
+                      //     mainAxisSpacing: 12.h,
+                      //     crossAxisSpacing: 12.w,
+                      //     childAspectRatio: 1.01,
+                      //     children: [
+                      //       _MasterTile(
+                      //         title: 'Products',
+                      //         subtitle:
+                      //         'Create, edit & manage product catalog',
+                      //         icon: Icons.inventory_2_rounded,
+                      //         count: productCount,
+                      //         gradient: const LinearGradient(
+                      //           begin: Alignment.topLeft,
+                      //           end: Alignment.bottomRight,
+                      //           colors: [
+                      //             Color(0xFF34D399),
+                      //             Color(0xFF10B981),
+                      //           ],
+                      //         ),
+                      //         onTap: () => Navigator.of(context).push(
+                      //           MaterialPageRoute(
+                      //             builder: (_) => const ProductMasterPage(),
+                      //           ),
+                      //         ),
+                      //         onLongPress: () {
+                      //           ScaffoldMessenger.of(context).showSnackBar(
+                      //             const SnackBar(
+                      //               content: Text(
+                      //                 'Long-press actions coming soon',
+                      //               ),
+                      //             ),
+                      //           );
+                      //         },
+                      //       ),
+                      //       _MasterTile(
+                      //         title: 'Agents',
+                      //         subtitle:
+                      //         'Profiles, assignments & contact info',
+                      //         icon: Icons.badge_rounded,
+                      //         count: agentCount,
+                      //         gradient: const LinearGradient(
+                      //           begin: Alignment.topLeft,
+                      //           end: Alignment.bottomRight,
+                      //           colors: [
+                      //             Color(0xFF60A5FA),
+                      //             Color(0xFF2563EB),
+                      //           ],
+                      //         ),
+                      //         onTap: () => Navigator.of(context).push(
+                      //           MaterialPageRoute(
+                      //             builder: (_) => const AgentMasterPage(),
+                      //           ),
+                      //         ),
+                      //         onLongPress: () {
+                      //           ScaffoldMessenger.of(context).showSnackBar(
+                      //             const SnackBar(
+                      //               content: Text(
+                      //                 'Long-press actions coming soon',
+                      //               ),
+                      //             ),
+                      //           );
+                      //         },
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
                     ],
                   );
                 },
@@ -159,7 +214,7 @@ class _MasterTileState extends State<_MasterTile> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp:   (_) => setState(() => _pressed = false),
+      onTapUp: (_) => setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
@@ -185,7 +240,10 @@ class _MasterTileState extends State<_MasterTile> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18.r),
                     color: Colors.white.withOpacity(.06),
-                    border: Border.all(color: Colors.white.withOpacity(.12), width: 1.r),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(.12),
+                      width: 1.r,
+                    ),
                   ),
                 ),
               ),
@@ -201,18 +259,31 @@ class _MasterTileState extends State<_MasterTile> {
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(.20),
                             borderRadius: BorderRadius.circular(14.r),
-                            border: Border.all(color: Colors.white.withOpacity(.18), width: 1.r),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(.18),
+                              width: 1.r,
+                            ),
                           ),
-                          child: Icon(widget.icon, color: Colors.white, size: 26.sp),
+                          child: Icon(
+                            widget.icon,
+                            color: Colors.white,
+                            size: 26.sp,
+                          ),
                         ),
                         const Spacer(),
                         if (widget.count != null)
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.w,
+                              vertical: 6.h,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(.28),
                               borderRadius: BorderRadius.circular(999.r),
-                              border: Border.all(color: Colors.white.withOpacity(.18), width: 1.r),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(.18),
+                                width: 1.r,
+                              ),
                             ),
                             child: Text(
                               '${widget.count}',

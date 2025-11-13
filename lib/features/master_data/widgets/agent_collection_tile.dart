@@ -26,6 +26,7 @@ class AgentCollectionCTAButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final grad1 = AppTheme.adminGreenLite;
     final grad2 = AppTheme.adminGreenDark;
     final onTile = Colors.white;
@@ -73,7 +74,8 @@ class AgentCollectionCTAButton extends StatelessWidget {
                     child: Icon(
                       Icons.payments_rounded,
                       size: 120.sp, // ⬆️ bigger background icon
-                      color: Colors.white.withOpacity(.10),
+                      // color: Colors.white.withOpacity(.10),
+                      color: AppTheme.adminGreen.withOpacity(.10),
                     ),
                   ),
                   // content centered vertically for tall layout

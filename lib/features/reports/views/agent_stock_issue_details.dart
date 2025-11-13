@@ -652,6 +652,16 @@ class _IssueTableViewState extends State<_IssueTableView> {
     super.dispose();
   }
 
+  // Optional extra blank row at the end (now includes gutter cell)
+  DataRow _blankRow() => DataRow(cells: const [
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(Text('')),
+    DataCell(SizedBox(width: 32)), // gutter
+  ]);
+
   @override
   Widget build(BuildContext context) {
     final items = widget.items;
@@ -692,42 +702,49 @@ class _IssueTableViewState extends State<_IssueTableView> {
                     color: AppTheme.adminWhite,
                     fontSize: 12.sp,
                   ),
-                  columns: const [
-                    DataColumn(label: Text('DATE')),
-                    DataColumn(label: Text('PRODUCT')),
-                    DataColumn(label: Text('DISTRIBUTOR')),
-                    DataColumn(label: Text('CODE')),
-                    DataColumn(label: Text('COUNT')),
+                  // REMOVE const and add trailing blank header cell (gutter)
+                  columns: [
+                    const DataColumn(label: Text('DATE')),
+                    const DataColumn(label: Text('PRODUCT')),
+                    const DataColumn(label: Text('DISTRIBUTOR')),
+                    const DataColumn(label: Text('CODE')),
+                    const DataColumn(label: Text('COUNT')),
+                    // --- trailing blank column
+                    DataColumn(label: SizedBox(width: 32.w)),
                   ],
-                  rows: items.map((e) {
-                    return DataRow(
-                      cells: [
-                        DataCell(Text(e.issueDate)), // dd/MM/yyyy
-                        DataCell(
-                          SizedBox(
-                            width: 140.w,
-                            child: Text(e.productName, overflow: TextOverflow.ellipsis),
+                  rows: [
+                    ...items.map((e) {
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(e.issueDate)), // dd/MM/yyyy
+                          DataCell(
+                            SizedBox(
+                              width: 140.w,
+                              child: Text(e.productName, overflow: TextOverflow.ellipsis),
+                            ),
                           ),
-                        ),
-                        DataCell(
-                          SizedBox(
-                            width: 130.w,
-                            child: Text(e.name, overflow: TextOverflow.ellipsis),
+                          DataCell(
+                            SizedBox(
+                              width: 130.w,
+                              child: Text(e.name, overflow: TextOverflow.ellipsis),
+                            ),
                           ),
-                        ),
-                        DataCell(
-                          SizedBox(
-                            width: 100.w,
-                            child: Text(e.distributorCode, overflow: TextOverflow.ellipsis),
+                          DataCell(
+                            SizedBox(
+                              width: 100.w,
+                              child: Text(e.distributorCode, overflow: TextOverflow.ellipsis),
+                            ),
                           ),
-                        ),
-                        // If you want integers only:
-                        DataCell(Text(e.issueCount.round().toString())),
-                        // If you prefer the old decimal style, replace the above with:
-                        // DataCell(Text(e.issueCount.toStringAsFixed(2))),
-                      ],
-                    );
-                  }).toList(),
+                          // If you want integers only:
+                          DataCell(Text(e.issueCount.round().toString())),
+                          // trailing gutter cell to match header
+                          DataCell(SizedBox(width: 32.w)),
+                        ],
+                      );
+                    }),
+                    // optional extra spacer row at the end
+                    _blankRow(),
+                  ],
                 ),
               ),
             ),
@@ -737,6 +754,7 @@ class _IssueTableViewState extends State<_IssueTableView> {
     );
   }
 }
+
 
 
 

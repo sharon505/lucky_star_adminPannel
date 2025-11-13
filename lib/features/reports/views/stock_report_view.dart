@@ -105,7 +105,6 @@ Future<void> _openFilterDialog(BuildContext context) async {
   final stockVm = context.read<StockReportViewModel>();
   final productVm = context.read<ProductViewModel>();
 
-  // seed with current values
   DateTime selectedDate = stockVm.date;
   ProductItem? selectedProduct = productVm.selected;
 
@@ -114,104 +113,119 @@ Future<void> _openFilterDialog(BuildContext context) async {
     barrierDismissible: false,
     builder: (ctx) {
       final formKey = GlobalKey<FormState>();
+      final media = MediaQuery.of(ctx);
+      final maxH = media.size.height * 0.65; // cap height so we can scroll
+      final maxW = media.size.width * 0.9;
 
       return AlertDialog(
         backgroundColor: AppTheme.adminGreenDark,
+        insetPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(
           'Stock Report',
-          style: AppTypography.heading1.copyWith(
-            fontSize: 17.sp,
-            color: AppTheme.adminGreen
-          ),
-          //style: TextStyle(color: AppTheme.adminWhite, fontWeight: FontWeight.w700),
+          style: AppTypography.heading1.copyWith(fontSize: 17.sp, color: AppTheme.adminGreen),
         ),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Product Dropdown from ProductViewModel
-              Consumer<ProductViewModel>(
-                builder: (_, pvm, __) {
-                  if (pvm.isLoading) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 12.h),
-                      child: const LinearProgressIndicator(color: AppTheme.adminGreen),
-                    );
-                  }
-                  if (pvm.error != null) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(pvm.error!, style: const TextStyle(color: Colors.redAccent)),
-                        SizedBox(height: 8.h),
-                        OutlinedButton(onPressed: () => pvm.load(), child: const Text('Retry')),
-                      ],
-                    );
-                  }
-
-                  final items = pvm.filteredItems;
-                  if (selectedProduct == null && items.isNotEmpty) {
-                    selectedProduct = items.first;
-                  }
-
-                  return DropdownButtonFormField<ProductItem>(
-                    value: selectedProduct,
-                    items: items
-                        .map((p) => DropdownMenuItem(
-                      value: p,
-                      child: Text(p.productName, overflow: TextOverflow.ellipsis),
-                    ))
-                        .toList(),
-                    onChanged: (v) => selectedProduct = v,
-                    validator: (v) => v == null ? 'Select a product' : null,
-                    decoration: _inputDeco('Product'),
-                    dropdownColor: AppTheme.adminGreenDark,
-                    style: const TextStyle(color: AppTheme.adminWhite),
-                  );
-                },
-              ),
-              SizedBox(height: 12.h),
-
-              // Date picker
-              InkWell(
-                onTap: () async {
-                  final d = await showDatePicker(
-                    context: ctx,
-                    initialDate: selectedDate,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2100),
-                    builder: (c, child) => Theme(
-                      data: Theme.of(c).copyWith(
-                        colorScheme: const ColorScheme.dark(
-                          primary: AppTheme.adminGreen,
-                          onPrimary: Colors.black,
-                          surface: AppTheme.adminGreenDark,
-                          onSurface: AppTheme.adminWhite,
-                        ),
-                      ),
-                      child: child!,
-                    ),
-                  );
-                  if (d != null) {
-                    selectedDate = d;
-                    (ctx as Element).markNeedsBuild();
-                  }
-                },
-                child: InputDecorator(
-                  decoration: _inputDeco('Date'),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // IMPORTANT: bound width & height BEFORE the scroll view
+        content: SizedBox(
+          width: maxW.clamp(280.0, 420.0),           // finite width for IntrinsicWidth
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxH), // finite height
+            child: Padding(
+              padding: media.viewInsets, // keyboard safe area
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_fmtDate(selectedDate),
-                          style: const TextStyle(color: AppTheme.adminWhite)),
-                      const Icon(Icons.calendar_today_rounded, color: AppTheme.adminGreen),
+                      // Product
+                      Consumer<ProductViewModel>(
+                        builder: (_, pvm, __) {
+                          if (pvm.isLoading) {
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: 12.h),
+                              child: const LinearProgressIndicator(color: AppTheme.adminGreen),
+                            );
+                          }
+                          if (pvm.error != null) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(pvm.error!, style: const TextStyle(color: Colors.redAccent)),
+                                SizedBox(height: 8.h),
+                                OutlinedButton(onPressed: () => pvm.load(), child: const Text('Retry')),
+                              ],
+                            );
+                          }
+
+                          final items = pvm.filteredItems;
+                          selectedProduct ??= items.isNotEmpty ? items.first : null;
+
+                          return DropdownButtonFormField<ProductItem>(
+                            value: selectedProduct,
+                            isExpanded: true, // avoid width overflow
+                            items: items
+                                .map((p) => DropdownMenuItem(
+                              value: p,
+                              child: Text(p.productName, overflow: TextOverflow.ellipsis),
+                            ))
+                                .toList(),
+                            onChanged: (v) => selectedProduct = v,
+                            validator: (v) => v == null ? 'Select a product' : null,
+                            decoration: _inputDeco('Product'),
+                            dropdownColor: AppTheme.adminGreenDark,
+                            style: const TextStyle(color: AppTheme.adminWhite),
+                          );
+                        },
+                      ),
+                      SizedBox(height: 12.h),
+
+                      // Date
+                      StatefulBuilder(
+                        builder: (c2, setStateDialog) {
+                          return InkWell(
+                            onTap: () async {
+                              final d = await showDatePicker(
+                                context: ctx,
+                                initialDate: selectedDate,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2100),
+                                builder: (c, child) => Theme(
+                                  data: Theme.of(c).copyWith(
+                                    colorScheme: const ColorScheme.dark(
+                                      primary: AppTheme.adminGreen,
+                                      onPrimary: Colors.black,
+                                      surface: AppTheme.adminGreenDark,
+                                      onSurface: AppTheme.adminWhite,
+                                    ),
+                                  ),
+                                  child: child!,
+                                ),
+                              );
+                              if (d != null) {
+                                selectedDate = d;
+                                setStateDialog(() {}); // safe rebuild
+                              }
+                            },
+                            child: InputDecorator(
+                              decoration: _inputDeco('Date'),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(_fmtDate(selectedDate),
+                                      style: const TextStyle(color: AppTheme.adminWhite)),
+                                  const Icon(Icons.calendar_today_rounded, color: AppTheme.adminGreen),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
         actions: [
@@ -228,11 +242,7 @@ Future<void> _openFilterDialog(BuildContext context) async {
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
               if (selectedProduct == null) return;
-
-              await stockVm.fetch(
-                date: selectedDate,
-                productId: selectedProduct!.productId,
-              );
+              await stockVm.fetch(date: selectedDate, productId: selectedProduct!.productId);
               if (ctx.mounted) Navigator.pop(ctx);
             },
             child: const Text('SUBMIT'),
@@ -242,6 +252,8 @@ Future<void> _openFilterDialog(BuildContext context) async {
     },
   );
 }
+
+
 
 InputDecoration _inputDeco(String label) {
   return InputDecoration(
