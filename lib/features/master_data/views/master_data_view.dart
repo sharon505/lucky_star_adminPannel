@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../widgets/agent_collection_cta_button.dart'; // contains PrimaryCTAButton
+import '../widgets/open_Issue_entry_dialog.dart';
+import '../widgets/open_Location_wise_dialog.dart';
 import '../widgets/open_agent_collection_dialog.dart';
 import '../../reports/viewModels/distributor_view_model.dart';
 import '../../reports/viewModels/product_view_model.dart';
@@ -27,22 +29,19 @@ class _MasterDataViewState extends State<MasterDataView> {
       _bootstrapped = true;
 
       final products = context.read<ProductViewModel>();
-      final agents   = context.read<DistributorViewModel>();
+      final agents = context.read<DistributorViewModel>();
 
-      await Future.wait([
-        products.load(),
-        agents.load(),
-      ]);
+      await Future.wait([products.load(), agents.load()]);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final productCount = context.select<ProductViewModel, int>(
-          (vm) => vm.items.length,
+      (vm) => vm.items.length,
     );
     final agentCount = context.select<DistributorViewModel, int>(
-          (vm) => vm.items.length,
+      (vm) => vm.items.length,
     );
 
     return Scaffold(
@@ -80,98 +79,22 @@ class _MasterDataViewState extends State<MasterDataView> {
                         leadingIcon: Icons.payments_outlined,
                         backgroundIcon: Icons.payments_rounded,
                       ),
+
                       PrimaryCTAButton(
-                        onTap: () {
-                          // TODO: open location wise issuing page
-                          // openLocationWiseIssuing(context);
-                        },
+                        onTap: () => openLocationWiseDialog(context),
                         title: 'Location Wise Issuing',
-                        subtitle:
-                        'Branch • Location • Product • Issue Count',
+                        subtitle: 'Branch • Location • Product • Issue Count',
                         leadingIcon: Icons.location_on_outlined,
                         backgroundIcon: Icons.location_city_rounded,
                       ),
+
                       PrimaryCTAButton(
-                        onTap: () {
-                          // TODO: open agent stock issue page
-                          // openAgentStockIssueDetails(context);
-                        },
+                        onTap: () => openIssueEntryDialog(context),
                         title: 'Agent Stock Issue',
-                        subtitle:
-                        'Product • Agent • Issue Date • Quantity',
+                        subtitle: 'Product • Agent • Issue Date • Quantity',
                         leadingIcon: Icons.inventory_2_outlined,
                         backgroundIcon: Icons.local_shipping_rounded,
                       ),
-                      // Grid is the ONLY scrollable in this screen
-                      // Expanded(
-                      //   child: GridView.count(
-                      //     physics: NeverScrollableScrollPhysics(),
-                      //     crossAxisCount: cols,
-                      //     mainAxisSpacing: 12.h,
-                      //     crossAxisSpacing: 12.w,
-                      //     childAspectRatio: 1.01,
-                      //     children: [
-                      //       _MasterTile(
-                      //         title: 'Products',
-                      //         subtitle:
-                      //         'Create, edit & manage product catalog',
-                      //         icon: Icons.inventory_2_rounded,
-                      //         count: productCount,
-                      //         gradient: const LinearGradient(
-                      //           begin: Alignment.topLeft,
-                      //           end: Alignment.bottomRight,
-                      //           colors: [
-                      //             Color(0xFF34D399),
-                      //             Color(0xFF10B981),
-                      //           ],
-                      //         ),
-                      //         onTap: () => Navigator.of(context).push(
-                      //           MaterialPageRoute(
-                      //             builder: (_) => const ProductMasterPage(),
-                      //           ),
-                      //         ),
-                      //         onLongPress: () {
-                      //           ScaffoldMessenger.of(context).showSnackBar(
-                      //             const SnackBar(
-                      //               content: Text(
-                      //                 'Long-press actions coming soon',
-                      //               ),
-                      //             ),
-                      //           );
-                      //         },
-                      //       ),
-                      //       _MasterTile(
-                      //         title: 'Agents',
-                      //         subtitle:
-                      //         'Profiles, assignments & contact info',
-                      //         icon: Icons.badge_rounded,
-                      //         count: agentCount,
-                      //         gradient: const LinearGradient(
-                      //           begin: Alignment.topLeft,
-                      //           end: Alignment.bottomRight,
-                      //           colors: [
-                      //             Color(0xFF60A5FA),
-                      //             Color(0xFF2563EB),
-                      //           ],
-                      //         ),
-                      //         onTap: () => Navigator.of(context).push(
-                      //           MaterialPageRoute(
-                      //             builder: (_) => const AgentMasterPage(),
-                      //           ),
-                      //         ),
-                      //         onLongPress: () {
-                      //           ScaffoldMessenger.of(context).showSnackBar(
-                      //             const SnackBar(
-                      //               content: Text(
-                      //                 'Long-press actions coming soon',
-                      //               ),
-                      //             ),
-                      //           );
-                      //         },
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
                     ],
                   );
                 },
@@ -183,6 +106,77 @@ class _MasterDataViewState extends State<MasterDataView> {
     );
   }
 }
+
+// Grid is the ONLY scrollable in this screen
+// Expanded(
+//   child: GridView.count(
+//     physics: NeverScrollableScrollPhysics(),
+//     crossAxisCount: cols,
+//     mainAxisSpacing: 12.h,
+//     crossAxisSpacing: 12.w,
+//     childAspectRatio: 1.01,
+//     children: [
+//       _MasterTile(
+//         title: 'Products',
+//         subtitle:
+//         'Create, edit & manage product catalog',
+//         icon: Icons.inventory_2_rounded,
+//         count: productCount,
+//         gradient: const LinearGradient(
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//           colors: [
+//             Color(0xFF34D399),
+//             Color(0xFF10B981),
+//           ],
+//         ),
+//         onTap: () => Navigator.of(context).push(
+//           MaterialPageRoute(
+//             builder: (_) => const ProductMasterPage(),
+//           ),
+//         ),
+//         onLongPress: () {
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             const SnackBar(
+//               content: Text(
+//                 'Long-press actions coming soon',
+//               ),
+//             ),
+//           );
+//         },
+//       ),
+//       _MasterTile(
+//         title: 'Agents',
+//         subtitle:
+//         'Profiles, assignments & contact info',
+//         icon: Icons.badge_rounded,
+//         count: agentCount,
+//         gradient: const LinearGradient(
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//           colors: [
+//             Color(0xFF60A5FA),
+//             Color(0xFF2563EB),
+//           ],
+//         ),
+//         onTap: () => Navigator.of(context).push(
+//           MaterialPageRoute(
+//             builder: (_) => const AgentMasterPage(),
+//           ),
+//         ),
+//         onLongPress: () {
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             const SnackBar(
+//               content: Text(
+//                 'Long-press actions coming soon',
+//               ),
+//             ),
+//           );
+//         },
+//       ),
+//     ],
+//   ),
+// ),
 
 class _MasterTile extends StatefulWidget {
   final String title;

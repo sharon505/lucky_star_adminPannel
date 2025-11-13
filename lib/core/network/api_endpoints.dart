@@ -46,6 +46,15 @@ class ApiEndpoints {
   static final Uri getProducts             = _u('USP_Getproducts');                    //finish
   static final Uri agentReceivables        = _u('AgentReceivable');                    //finish
 
+  static final Uri getTeamAgent            = _u('Get_Team_Agent');                     //finish
+  static final Uri getTeam                 = _u('GetTeam');                            //finish
+  static final Uri getCurrentStock         = _u('GetStock');                           //finish
+  static final Uri geLocation              = _u('GetLocation');                        //finish
+
+  // ---- Transactions ----
+  static final Uri agentStockIssue         = _u('Issue_Agent_Stock');
+  static final Uri locationStockIssue      = _u('Issue_LocationStock');                //finish
+
   // ---- Dash Bord ----
   static final Uri dashboard               = _u('GET_DASHBOARD');                      //finish
 

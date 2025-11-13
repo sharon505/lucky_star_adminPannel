@@ -25,7 +25,11 @@ import 'features/financial_overview/views/get_cash_book.dart';
 import 'features/financial_overview/views/profit_and_loss_statement.dart';
 
 import 'features/home/home_page.dart';
-
+import 'features/master_data/viewModel/current_stock_view_model.dart';
+import 'features/master_data/viewModel/get_team_view_model.dart';
+import 'features/master_data/viewModel/location_stock_issue_view_model.dart';
+import 'features/master_data/viewModel/location_view_model.dart';
+import 'features/master_data/viewModel/team_agent_view_model.dart';
 import 'features/reports/viewModels/agent_stock_issue_view_model.dart';
 import 'features/reports/viewModels/cash_collection_by_agent_view_model.dart';
 import 'features/reports/viewModels/cash_receivables_view_model.dart';
@@ -52,7 +56,6 @@ class MyHttpOverrides extends HttpOverrides{
   }
 }
 
-
 void main() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,10 +65,10 @@ void main() async {
 
 List<SingleChildWidget> providers = [
   ///Auth
-  ChangeNotifierProvider(create: (context) => AuthViewModel()),
-  ChangeNotifierProvider(create: (context) => LoginFormProvider()),
+  ChangeNotifierProvider(create: (_) => AuthViewModel()),
+  ChangeNotifierProvider(create: (_) => LoginFormProvider()),
   ///Financial
-  ChangeNotifierProvider(create: (context) => DashboardViewModel()..fetch()),
+  ChangeNotifierProvider(create: (_) => DashboardViewModel()..fetch()),
   ///ticket search
   ChangeNotifierProvider(create: (_) => PrizeSearchViewModel()),
   ///report
@@ -84,9 +87,13 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => ExpenseIncomeTrackerViewModel()),
   ChangeNotifierProvider(create: (_) => AgentReceivablesViewModel()),
   ChangeNotifierProvider(create: (_) => AgentCollectionViewModel()),
+  ///Transactions
+  ChangeNotifierProvider(create: (_) => LocationViewModel()..load()),
+  ChangeNotifierProvider(create: (_) => CurrentStockViewModel()),
+  ChangeNotifierProvider(create: (_) => LocationStockIssueViewModel()),
+  ChangeNotifierProvider(create: (_) => GetTeamViewModel()),
+  ChangeNotifierProvider(create: (_) => TeamAgentViewModel()),
 ];
-
-//9567030890
 
 Map<String, Widget Function(BuildContext)> routes = <String, WidgetBuilder>{
   'LoginView':                (context) => const LoginView(),
