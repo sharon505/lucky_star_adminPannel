@@ -287,18 +287,18 @@ class _CashBookContentState extends State<_CashBookContent> {
                         'Date: $dateStr',
                         style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
                       ),
-                    Text(
-                      'Rows: ${widget.rows.length}',
-                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
-                    ),
-                    Text(
-                      'Cash Balance: ${widget.totalDebit.toStringAsFixed(2)}',
-                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
-                    ),
-                    Text(
-                      'Total Credit: ${widget.totalCredit.toStringAsFixed(2)}',
-                      style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
-                    ),
+                    // Text(
+                    //   'Rows: ${widget.rows.length}',
+                    //   style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
+                    // ),
+                    // Text(
+                    //   'Cash Balance: ${widget.totalDebit.toStringAsFixed(2)}',
+                    //   style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
+                    // ),
+                    // Text(
+                    //   'Total Credit: ${widget.totalCredit.toStringAsFixed(2)}',
+                    //   style: TextStyle(color: AppTheme.adminWhite.withOpacity(.85), fontSize: 12.sp),
+                    // ),
                   ],
                 ),
               ),

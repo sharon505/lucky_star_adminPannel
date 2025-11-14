@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../core/theme/color_scheme.dart';
 import '../widgets/agent_collection_cta_button.dart'; // contains PrimaryCTAButton
 import '../widgets/open_Issue_entry_dialog.dart';
 import '../widgets/open_Location_wise_dialog.dart';
@@ -51,11 +52,14 @@ class _MasterDataViewState extends State<MasterDataView> {
           // Background gradient
           Positioned.fill(
             child: DecoratedBox(
-              decoration: const BoxDecoration(
+              decoration:  BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF0C1725), Color(0xFF142A3B)],
+                  colors: [
+                    AppTheme.adminGreenDark,
+                    AppTheme.adminGreenDark
+                  ],
                 ),
               ),
             ),

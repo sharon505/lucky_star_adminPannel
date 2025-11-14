@@ -25,6 +25,7 @@ import 'features/financial_overview/views/get_cash_book.dart';
 import 'features/financial_overview/views/profit_and_loss_statement.dart';
 
 import 'features/home/home_page.dart';
+import 'features/master_data/viewModel/agent_stock_issue_view_model.dart';
 import 'features/master_data/viewModel/current_stock_view_model.dart';
 import 'features/master_data/viewModel/get_team_view_model.dart';
 import 'features/master_data/viewModel/location_stock_issue_view_model.dart';
@@ -93,6 +94,7 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => LocationStockIssueViewModel()),
   ChangeNotifierProvider(create: (_) => GetTeamViewModel()),
   ChangeNotifierProvider(create: (_) => TeamAgentViewModel()),
+  ChangeNotifierProvider(create: (_) => AgentIssueViewModel()),
 ];
 
 Map<String, Widget Function(BuildContext)> routes = <String, WidgetBuilder>{
