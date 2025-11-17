@@ -40,6 +40,7 @@ class ApiEndpoints {
   static final Uri profitAndLossStatement  = _u('REPORT_PANDL');                       //finish
   static final Uri expenseIncomeTracker    = _u('USP_GETJOURNALENTRYREPORT');          //finish
   static final Uri agentCollection         = _u('AgentCollection');                    //finish
+  static final Uri agentMaster             = _u('Insert_Agent');                       //finish
 
   // ---- Extra ----
   static final Uri getAgent                = _u('USP_GetDistributor_LIST');            //finish

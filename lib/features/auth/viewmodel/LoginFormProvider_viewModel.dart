@@ -4,14 +4,21 @@ class LoginFormProvider extends ChangeNotifier {
   // Controllers
   /// TODO: Hard-coded dev values. Remove before release.
   final TextEditingController usernameController = TextEditingController(
-    text: 'admin',
+    ///only reports
+    // text: '1524'
+    // text: 'admin',
+
+
     // text: '1234',
     // text: "Jebelali1",
     // text: 'BP RZ01',
   );
 
   final TextEditingController passwordController = TextEditingController(
-    text: 'admin@123',
+    ///only reports passWord
+    //   text: '1524#123'
+    // text: 'admin@123',
+
     // text: 'Pass@123',
     // text: 'ali1@123',
     // text: 'RZ01#123',

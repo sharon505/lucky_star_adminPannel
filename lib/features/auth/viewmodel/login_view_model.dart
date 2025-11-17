@@ -18,7 +18,7 @@ class AuthViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   LoginResponse? get loginResponse => _loginResponse;
 
-  /// Call login and update state.
+  /// Call login & update state using new LoginResponse model.
   Future<void> login(UserModel user) async {
     _setLoading(true);
     _setError(null);
@@ -27,26 +27,30 @@ class AuthViewModel extends ChangeNotifier {
       final resp = await _service.login(user);
 
       if (resp == null) {
-        _setError('Login failed. Please try again.');
+        _setError("Server error: No response");
         _loginResponse = null;
       } else {
-        // Optional: check statusId from first Result (if present)
-        final status = resp.result.isNotEmpty ? resp.result.first.statusId : null;
+        final int? status = resp.statusId;
+        final String? msg = resp.message;
+
         if (status == 200) {
+          // SUCCESS
           _loginResponse = resp;
         } else {
+          // FAILURE
           _loginResponse = null;
-          _setError(resp.result.isNotEmpty ? resp.result.first.msg : 'Login failed.');
+          _setError(msg ?? "Login failed.");
         }
       }
     } catch (e) {
       _loginResponse = null;
-      _setError('Unexpected error: $e');
+      _setError("Unexpected error: $e");
     } finally {
       _setLoading(false);
     }
   }
 
+  /// Reset states
   void reset() {
     _isLoading = false;
     _errorMessage = null;
@@ -56,7 +60,6 @@ class AuthViewModel extends ChangeNotifier {
 
   // --- internal setters ---
   void _setLoading(bool v) {
-    if (_isLoading == v) return;
     _isLoading = v;
     notifyListeners();
   }

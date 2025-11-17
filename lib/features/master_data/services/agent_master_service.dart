@@ -3,28 +3,28 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 
 import '../../../core/network/api_endpoints.dart';
-import '../models/agent_stock_Issue_response_model.dart';
+import '../models/agent_master_model.dart';
 
-class AgentStockIssueService {
+class AgentMasterService {
   final http.Client _client;
   final Duration timeout;
 
-  AgentStockIssueService({
+  AgentMasterService({
     http.Client? client,
     this.timeout = const Duration(seconds: 30),
   }) : _client = client ?? http.Client();
 
-  /// Create Agent Stock Issue
+  /// Create / Insert Agent Master
   ///
   /// POST body:
-  ///   issuedate:      yyyy-MM-dd (or your server format)
-  ///   current_stock:  <int / double>
-  ///   teamcode:       <String>
-  ///   agent:          <String>  e.g. "JEBEL ALI 1(JEBEL ALI)"
-  ///   Product:        <int>     (ProductId)
-  ///   IssueQuantity:  <int>
-  ///   user:           <String>  (logged in user code / id)
-  ///   locationid:     <int>
+  ///   Name        : String
+  ///   code        : String
+  ///   Address     : String
+  ///   Locationid  : int
+  ///   Teamid      : int
+  ///   Phone       : String
+  ///   Email       : String
+  ///   User        : String
   ///
   /// Expected JSON:
   /// {
@@ -33,33 +33,31 @@ class AgentStockIssueService {
   ///   ]
   /// }
   ///
-  /// Returns: AgentStockIssueResponse
-  Future<AgentStockIssueResponse> issueStock({
-    required String issueDate,
-    required num currentStock,
-    required String teamCode,   // "JEBEL ALI"
-    required String agent,      // "JEBEL ALI 1"
-    required String product,    // "LUCKY STAR CARD"
-    required int issueQuantity,
-    required String user,       // "admin"
-    required int locationId,    // 1
+  Future<AgentMasterResponse> createAgent({
+    required String name,
+    required String code,
+    required String address,
+    required int locationId,
+    required int teamId,
+    required String phone,
+    required String email,
+    required String user,
   }) async {
     final reqId = _newReqId();
     final sw = Stopwatch()..start();
 
-    final uri     = ApiEndpoints.agentStockIssue;
+    final uri = ApiEndpoints.agentMaster;      // Insert_Agent
     final headers = ApiEndpoints.formHeaders;
 
-
-    final body = {
-      'issuedate'    : issueDate,                 // "2025-11-14"
-      'current_stock': currentStock.toString(),   // "28535"
-      'teamcode'     : teamCode,                  // "JEBEL ALI"
-      'agent'        : agent,                     // "JEBEL ALI 1"
-      'Product'      : product,                   // "LUCKY STAR CARD"
-      'IssueQuantity': issueQuantity.toString(),  // "10"
-      'user'         : user,                      // "admin"
-      'locationid'   : locationId.toString(),     // "1"
+    final body = <String, String>{
+      'Name'       : name,
+      'code'       : code,
+      'Address'    : address,
+      'Locationid' : locationId.toString(),
+      'Teamid'     : teamId.toString(),
+      'Phone'      : phone,
+      'Email'      : email,
+      'User'       : user,
     };
 
     _log(reqId, 'POST ${uri.toString()}');
@@ -72,11 +70,7 @@ class AgentStockIssueService {
           .post(uri, headers: headers, body: body)
           .timeout(timeout);
     } catch (e) {
-      _log(
-        reqId,
-        'HTTP error after ${sw.elapsedMilliseconds}ms -> $e',
-        isError: true,
-      );
+      _log(reqId, 'HTTP error after ${sw.elapsedMilliseconds}ms -> $e', isError: true);
       rethrow;
     }
 
@@ -84,7 +78,7 @@ class AgentStockIssueService {
     _log(reqId, 'Raw: ${_truncate(res.body)}');
 
     if (res.statusCode != 200) {
-      final msg = 'AgentStockIssue failed (${res.statusCode}): ${_truncate(res.body, 600)}';
+      final msg = 'AgentMaster failed (${res.statusCode}): ${_truncate(res.body, 600)}';
       _log(reqId, msg, isError: true);
       throw Exception(msg);
     }
@@ -97,8 +91,9 @@ class AgentStockIssueService {
       rethrow;
     }
 
-    final response = AgentStockIssueResponse.fromJson(decoded);
+    final response = AgentMasterResponse.fromJson(decoded);
     _log(reqId, 'Parsed -> ${response.result.length} row(s)');
+
     return response;
   }
 
@@ -106,16 +101,14 @@ class AgentStockIssueService {
     _client.close();
   }
 
-  // --- Helpers --------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  // Helpers
+  // --------------------------------------------------------------------------
 
   void _log(String reqId, String msg, {bool isError = false}) {
     if (!kDebugMode) return;
     final line = '[$reqId] $msg';
-    if (isError) {
-      debugPrint('❌ $line');
-    } else {
-      debugPrint('🔎 $line');
-    }
+    isError ? debugPrint('❌ $line') : debugPrint('🔎 $line');
   }
 
   Map<String, String> _safeHeaders(Map<String, String> headers) {
@@ -133,6 +126,6 @@ class AgentStockIssueService {
 
   String _newReqId() {
     final ms = DateTime.now().millisecondsSinceEpoch;
-    return 'ASI${ms.toRadixString(36).toUpperCase()}';
+    return 'AM${ms.toRadixString(36).toUpperCase()}';
   }
 }

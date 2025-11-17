@@ -25,6 +25,7 @@ import 'features/financial_overview/views/get_cash_book.dart';
 import 'features/financial_overview/views/profit_and_loss_statement.dart';
 
 import 'features/home/home_page.dart';
+import 'features/master_data/viewModel/agent_master_view_model.dart';
 import 'features/master_data/viewModel/agent_stock_issue_view_model.dart';
 import 'features/master_data/viewModel/current_stock_view_model.dart';
 import 'features/master_data/viewModel/get_team_view_model.dart';
@@ -48,12 +49,12 @@ import 'features/reports/views/current_stock_by_agent.dart';
 import 'features/reports/views/sales_details_by_agent.dart';
 import 'features/reports/views/stock_report_view.dart';
 
-
-class MyHttpOverrides extends HttpOverrides{
+class MyHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(SecurityContext? context){
+  HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }
 
@@ -61,17 +62,21 @@ void main() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   await ScreenUtil.ensureScreenSize();
-  runApp(const MyApp());
+  // runApp(const MyApp());
+  runApp(Phoenix(child: MyApp()));
 }
 
 List<SingleChildWidget> providers = [
   ///Auth
   ChangeNotifierProvider(create: (_) => AuthViewModel()),
   ChangeNotifierProvider(create: (_) => LoginFormProvider()),
+
   ///Financial
   ChangeNotifierProvider(create: (_) => DashboardViewModel()..fetch()),
+
   ///ticket search
   ChangeNotifierProvider(create: (_) => PrizeSearchViewModel()),
+
   ///report
   ChangeNotifierProvider(create: (_) => StockReportViewModel()),
   ChangeNotifierProvider(create: (_) => ProductViewModel()..load()),
@@ -81,6 +86,7 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => CashReceivablesViewModel()),
   ChangeNotifierProvider(create: (_) => SalesDetailsByAgentViewModel()),
   ChangeNotifierProvider(create: (_) => CashCollectionByAgentViewModel()),
+
   ///Financial
   ChangeNotifierProvider(create: (_) => CashBookViewModel()),
   ChangeNotifierProvider(create: (_) => DayBookViewModel()..autoBootstrap()),
@@ -88,6 +94,7 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => ExpenseIncomeTrackerViewModel()),
   ChangeNotifierProvider(create: (_) => AgentReceivablesViewModel()),
   ChangeNotifierProvider(create: (_) => AgentCollectionViewModel()),
+
   ///Transactions
   ChangeNotifierProvider(create: (_) => LocationViewModel()..load()),
   ChangeNotifierProvider(create: (_) => CurrentStockViewModel()),
@@ -95,25 +102,29 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => GetTeamViewModel()),
   ChangeNotifierProvider(create: (_) => TeamAgentViewModel()),
   ChangeNotifierProvider(create: (_) => AgentIssueViewModel()),
+  ChangeNotifierProvider(create: (_) => AgentMasterViewModel()),
 ];
 
 Map<String, Widget Function(BuildContext)> routes = <String, WidgetBuilder>{
-  'LoginView':                (context) => const LoginView(),
-  'HomePage':                 (context) => const HomePage(),
-  'DashboardView':            (context) => const DashboardView(),
+  'LoginView': (context) => const LoginView(),
+  'HomePage': (context) => const HomePage(),
+  'DashboardView': (context) => const DashboardView(),
+
   ///reports
-  'StockReportView':          (context) => const StockReportView(),
-  'AgentStockIssueDetails':   (context) => const AgentStockIssueDetails(),
-  'CurrentStockByAgent':      (context) => const CurrentStockByAgent(),
+  'StockReportView': (context) => const StockReportView(),
+  'AgentStockIssueDetails': (context) => const AgentStockIssueDetails(),
+  'CurrentStockByAgent': (context) => const CurrentStockByAgent(),
+
   ///sales
-  'CashCollectionByAgent':    (context) => const CashCollectionByAgent(),
-  'CashReceivablesByAgent':   (context) => const CashReceivablesByAgent(),
-  'SalesDetailsByAgent':      (context) => const SalesDetailsByAgent(),
+  'CashCollectionByAgent': (context) => const CashCollectionByAgent(),
+  'CashReceivablesByAgent': (context) => const CashReceivablesByAgent(),
+  'SalesDetailsByAgent': (context) => const SalesDetailsByAgent(),
+
   ///Financial
-  'GetCashBook':              (context) => const GetCashBook(),
-  'DayBook':                  (context) => const DayBook(),
-  'ProfitAndLossStatement':   (context) => const ProfitAndLossStatement(),
-  'ExpenseIncomeTracker':     (context) => const ExpenseIncomeTracker(),
+  'GetCashBook': (context) => const GetCashBook(),
+  'DayBook': (context) => const DayBook(),
+  'ProfitAndLossStatement': (context) => const ProfitAndLossStatement(),
+  'ExpenseIncomeTracker': (context) => const ExpenseIncomeTracker(),
 };
 
 class MyApp extends StatelessWidget {

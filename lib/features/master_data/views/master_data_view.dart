@@ -9,8 +9,7 @@ import '../widgets/open_Location_wise_dialog.dart';
 import '../widgets/open_agent_collection_dialog.dart';
 import '../../reports/viewModels/distributor_view_model.dart';
 import '../../reports/viewModels/product_view_model.dart';
-import 'product_master_page.dart';
-import 'agent_master_page.dart';
+import '../widgets/open_agent_master_dialog.dart';
 
 class MasterDataView extends StatefulWidget {
   const MasterDataView({super.key});
@@ -46,66 +45,78 @@ class _MasterDataViewState extends State<MasterDataView> {
     );
 
     return Scaffold(
+      backgroundColor: AppTheme.adminGreenDark,
       extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          // Background gradient
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration:  BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.adminGreenDark,
-                    AppTheme.adminGreenDark
-                  ],
+      body: SingleChildScrollView(
+        child: Stack(
+          children: [
+            // Background gradient
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration:  BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppTheme.adminGreenDark,
+                      AppTheme.adminGreenDark
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
+        
+            // Content
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(12.w),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 10.h,
+                      children: [
+                        // Top CTA buttons (fixed, grid scrolls)
+                        PrimaryCTAButton(
+                          onTap: () => openAgentCollectionDialog(context),
+                          title: 'Agent Collection',
+                          subtitle: 'Day Book • Cash • Prizes • Adjustments',
+                          leadingIcon: Icons.payments_outlined,
+                          backgroundIcon: Icons.payments_rounded,
+                        ),
+        
+                        PrimaryCTAButton(
+                          onTap: () => openLocationWiseDialog(context),
+                          title: 'Location Wise Issuing',
+                          subtitle: 'Branch • Location • Product • Issue Count',
+                          leadingIcon: Icons.location_on_outlined,
+                          backgroundIcon: Icons.location_city_rounded,
+                        ),
+        
+                        PrimaryCTAButton(
+                          onTap: () => openIssueEntryDialog(context),
+                          title: 'Agent Stock Issue',
+                          subtitle: 'Product • Agent • Issue Date • Quantity',
+                          leadingIcon: Icons.inventory_2_outlined,
+                          backgroundIcon: Icons.local_shipping_rounded,
+                        ),
+        
+                        PrimaryCTAButton(
+                          onTap: () => openAgentMasterDialog(context),
+                          title: 'Agent Creation',
+                          subtitle: 'Name • Team • Location • Mobile',
+                          leadingIcon: Icons.person_add_alt_1_outlined,
+                          backgroundIcon: Icons.group_add_rounded,
+                        ),
 
-          // Content
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.all(12.w),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 10.h,
-                    children: [
-                      // Top CTA buttons (fixed, grid scrolls)
-                      PrimaryCTAButton(
-                        onTap: () => openAgentCollectionDialog(context),
-                        title: 'Agent Collection',
-                        subtitle: 'Day Book • Cash • Prizes • Adjustments',
-                        leadingIcon: Icons.payments_outlined,
-                        backgroundIcon: Icons.payments_rounded,
-                      ),
-
-                      PrimaryCTAButton(
-                        onTap: () => openLocationWiseDialog(context),
-                        title: 'Location Wise Issuing',
-                        subtitle: 'Branch • Location • Product • Issue Count',
-                        leadingIcon: Icons.location_on_outlined,
-                        backgroundIcon: Icons.location_city_rounded,
-                      ),
-
-                      PrimaryCTAButton(
-                        onTap: () => openIssueEntryDialog(context),
-                        title: 'Agent Stock Issue',
-                        subtitle: 'Product • Agent • Issue Date • Quantity',
-                        leadingIcon: Icons.inventory_2_outlined,
-                        backgroundIcon: Icons.local_shipping_rounded,
-                      ),
-                    ],
-                  );
-                },
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -211,8 +222,8 @@ class _MasterTileState extends State<_MasterTile> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) => setState(() => _pressed = false),
+      onTapDown: (_) =>  setState(() => _pressed = true),
+      onTapUp: (_) =>    setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
